@@ -50,6 +50,7 @@ function SearchResults() {
           results = userId 
             ? await searchMoviesForUser(searchTermTrimmed, userId)
             : await searchMovieTitles(searchTermTrimmed);
+			console.log('Results:', results);
           break;
         case "database":
           results = userId

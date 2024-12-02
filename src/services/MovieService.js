@@ -159,7 +159,7 @@ export const searchMovies = async (query) => {
   }
 };
 
-export const rateMovie = async (userId, movieId, rating) => {
+export const rateMovie = async (userId, movieId, rating, review = "") => {
   try {
     const response = await fetch(
       `${API_URL}/users/${userId}/${movieId}/rating/create`,
@@ -168,14 +168,20 @@ export const rateMovie = async (userId, movieId, rating) => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ rating }),
+        body: JSON.stringify({
+          rating,
+          review,
+          reviewDate: new Date().toISOString()
+        }),
       }
     );
     if (!response.ok) {
-      console.error("Failed to rate movie");
+      throw new Error("Failed to rate movie");
     }
+    return await response.json();
   } catch (error) {
     console.error("Error rating movie", error);
+    throw error;
   }
 };
 
@@ -249,5 +255,73 @@ export const searchDatabaseForUser = async (query, userId) => {
   } catch (error) {
     console.error("Error searching database for user", error);
     return [];
+  }
+};
+
+export const getUserRatings = async (userId) => {
+  try {
+    const response = await fetch(`${API_URL}/users/${userId}/rating`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch user ratings');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching user ratings:', error);
+    throw error;
+  }
+};
+
+export const getUserRating = async (userId, tconst) => {
+  try {
+    const response = await fetch(`${API_URL}/users/${userId}/${tconst}/rating`);
+    if (!response.ok) {
+      if (response.status === 404) {
+        return null;
+      }
+      throw new Error('Failed to fetch user rating');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching user rating:', error);
+    return null;
+  }
+};
+
+export const getUserRatingsWithMovies = async (userId) => {
+  try {
+    // Get user ratings
+    const ratings = await getUserRatings(userId);
+    
+    // Get all movies in one request
+    const moviesResponse = await fetch(`${API_URL}/movies`);
+    if (!moviesResponse.ok) {
+      throw new Error('Failed to fetch movies');
+    }
+    const moviesData = await moviesResponse.json();
+    const movies = moviesData.items || [];
+
+    // Match ratings with movie details and fetch missing movies
+    const ratingsWithMovies = await Promise.all(ratings.map(async rating => {
+      let movie = movies.find(m => m.tconst === rating.tConst);
+      
+      // If movie not found in initial batch, fetch it individually
+      if (!movie) {
+        try {
+          movie = await getMovieDetails(rating.tConst);
+        } catch (error) {
+          console.error(`Failed to fetch details for movie ${rating.tConst}:`, error);
+        }
+      }
+
+      return {
+        ...rating,
+        movieTitle: movie ? movie.primaryTitle : rating.tConst
+      };
+    }));
+
+    return ratingsWithMovies;
+  } catch (error) {
+    console.error('Error fetching ratings with movies:', error);
+    throw error;
   }
 };

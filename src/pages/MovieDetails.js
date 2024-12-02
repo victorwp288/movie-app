@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useParams } from "react-router-dom";
-import { getMovieDetails, addBookmark, rateMovie, getUserBookmarks, removeBookmark } from "../services/MovieService";
-import { Container, Button, Card, Row, Col, Badge, Spinner } from "react-bootstrap";
+import { getMovieDetails, addBookmark, rateMovie, getUserBookmarks, removeBookmark, getUserRating } from "../services/MovieService";
+import { Container, Button, Card, Row, Col, Badge, Spinner, Form } from "react-bootstrap";
 import { AuthContext } from "../context/AuthContext";
 import { FaStar, FaRegStar, FaBookmark } from 'react-icons/fa';
 
@@ -9,8 +9,10 @@ function MovieDetails() {
   const { id } = useParams();
   const [movie, setMovie] = useState(null);
   const [rating, setRating] = useState(null);
+  const [review, setReview] = useState("");
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
+  const [ratingLoading, setRatingLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -53,7 +55,22 @@ function MovieDetails() {
       }
     };
 
+    const fetchUserRating = async () => {
+      if (userId && movie?.tConst) {
+        try {
+          const userRating = await getUserRating(userId, movie.tConst);
+          if (userRating) {
+            setRating(userRating.rating);
+            setReview(userRating.review || "");
+          }
+        } catch (error) {
+          console.error('Error fetching user rating:', error);
+        }
+      }
+    };
+
     checkBookmarkStatus();
+    fetchUserRating();
   }, [userId, movie]);
 
   const handleBookmark = async () => {
@@ -86,16 +103,20 @@ function MovieDetails() {
   };
 
   const handleRating = async (newRating) => {
-    if (userId) {
-      try {
-        await rateMovie(userId, movie.tConst, newRating);
-        setRating(newRating);
-        alert("Rating submitted successfully!");
-      } catch (error) {
-        alert("Failed to submit rating");
-      }
-    } else {
+    if (!userId) {
       alert("Please log in to rate movies.");
+      return;
+    }
+
+    setRatingLoading(true);
+    try {
+      await rateMovie(userId, movie.tConst, newRating, review);
+      setRating(newRating);
+      alert("Rating submitted successfully!");
+    } catch (error) {
+      alert("Failed to submit rating");
+    } finally {
+      setRatingLoading(false);
     }
   };
 
@@ -168,21 +189,60 @@ function MovieDetails() {
               </div>
 
               <div className="mt-4">
-                <h5>Average Rating: {movie.averageRating}/5 ({movie.numVotes} votes)</h5>
+                <h5>Average Rating: {movie.averageRating}/10 ({movie.numVotes} votes)</h5>
                 {userId && (
                   <div className="mt-3">
                     <h6>Your Rating:</h6>
-                    <div className="d-flex gap-2">
-                      {[1, 2, 3, 4, 5].map((num) => (
+                    <div className="d-flex flex-wrap gap-1 mb-3">
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
                         <Button
                           key={num}
                           variant={num <= rating ? "warning" : "outline-warning"}
-                          onClick={() => handleRating(num)}
+                          onClick={() => setRating(num)}
+                          disabled={ratingLoading}
+                          size="sm"
+                          style={{ minWidth: '35px' }}
                         >
-                          {num <= rating ? <FaStar /> : <FaRegStar />}
+                          {num <= rating ? <FaStar size={12} /> : <FaRegStar size={12} />}
                         </Button>
                       ))}
                     </div>
+                    <Form onSubmit={(e) => {
+                      e.preventDefault();
+                      handleRating(rating);
+                    }}>
+                      <Form.Group className="mb-3">
+                        <Form.Label>Your Review (optional):</Form.Label>
+                        <Form.Control
+                          as="textarea"
+                          rows={3}
+                          value={review}
+                          onChange={(e) => setReview(e.target.value)}
+                          placeholder="Write your review here..."
+                        />
+                      </Form.Group>
+                      <Button 
+                        type="submit" 
+                        variant="primary"
+                        disabled={!rating || ratingLoading}
+                      >
+                        {ratingLoading ? (
+                          <>
+                            <Spinner
+                              as="span"
+                              animation="border"
+                              size="sm"
+                              role="status"
+                              aria-hidden="true"
+                              className="me-2"
+                            />
+                            Submitting...
+                          </>
+                        ) : (
+                          'Submit Rating'
+                        )}
+                      </Button>
+                    </Form>
                   </div>
                 )}
               </div>
