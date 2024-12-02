@@ -11,9 +11,7 @@ function Profile() {
   const [userDetails, setUserDetails] = useState(null);
   const [bookmarks, setBookmarks] = useState([]);
   const [ratings, setRatings] = useState([]);
-  const [bookmarksLoading, setBookmarksLoading] = useState(true);
   const [ratingsLoading, setRatingsLoading] = useState(true);
-  const [bookmarksError, setBookmarksError] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -40,13 +38,10 @@ function Profile() {
       if (!authTokens?.userId) return;
       
       try {
-        setBookmarksLoading(true);
         const bookmarkedMovies = await getUserBookmarks(authTokens.userId);
         setBookmarks(bookmarkedMovies);
       } catch (error) {
         console.error('Error fetching bookmarks:', error);
-      } finally {
-        setBookmarksLoading(false);
       }
     };
 
@@ -77,6 +72,32 @@ function Profile() {
   const handleBookmarkRemove = async (movieId) => {
     setBookmarks(prev => prev.filter(movie => movie.tconst !== movieId));
   };
+
+  const fetchBookmarks = async () => {
+    if (!authTokens?.userId) return;
+    
+    try {
+      const bookmarkedMovies = await getUserBookmarks(authTokens.userId);
+      setBookmarks(bookmarkedMovies);
+    } catch (error) {
+      console.error('Error fetching bookmarks:', error);
+    }
+  };
+
+  // Add focus effect to refresh bookmarks
+  useEffect(() => {
+    const handleFocus = () => {
+      fetchBookmarks();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    // Also refresh when component mounts
+    fetchBookmarks();
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [authTokens]);
 
   return (
     <Container className="mt-4">
@@ -160,11 +181,7 @@ function Profile() {
       <Card className="mt-4">
         <Card.Header as="h4">My Bookmarks</Card.Header>
         <Card.Body>
-          {bookmarksLoading ? (
-            <div className="text-center">
-              <Spinner animation="border" />
-            </div>
-          ) : bookmarks.length === 0 ? (
+          {bookmarks.length === 0 ? (
             <p className="text-center">You haven't bookmarked any movies yet.</p>
           ) : (
             <Row>

@@ -3,6 +3,7 @@ import { login } from "../services/AuthService";
 import { Form, Button, Container, Alert } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import { passwordSchema } from "../services/SecurityService";
 
 function Login() {
   const [formData, setFormData] = useState({
@@ -29,15 +30,17 @@ function Login() {
     setLoading(true);
 
     try {
+      await passwordSchema.parseAsync(formData.password);
+      
       const response = await login(formData.username, formData.password);
-      
-      // Store auth data
       setAuthTokens(response);
-      
-      // Redirect to home page
       navigate('/', { replace: true });
     } catch (err) {
-      setError(err.message || 'Login failed');
+      if(err.name === 'ZodError') {
+        setError(err.errors[0].message);
+      } else {
+        setError(err.message || 'Login failed');
+      }
     } finally {
       setLoading(false);
     }

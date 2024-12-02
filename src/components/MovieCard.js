@@ -3,16 +3,41 @@ import { Link } from "react-router-dom";
 import { Card, Button } from "react-bootstrap";
 import { FaBookmark, FaRegBookmark } from 'react-icons/fa';
 import { AuthContext } from "../context/AuthContext";
-import { addBookmark, removeBookmark } from "../services/MovieService";
+import { addBookmark, removeBookmark, getUserBookmarks } from "../services/MovieService";
 
 function MovieCard({ movie, isBookmarked = false, onBookmarkChange }) {
+  console.log('MovieCard component rendered with movie:', movie);
+  console.log('onBookmarkChange:', onBookmarkChange);
+  
   const [bookmarked, setBookmarked] = useState(isBookmarked);
   const [loading, setLoading] = useState(false);
   const { authTokens } = useContext(AuthContext);
   
+  const userId = authTokens ? authTokens.userId : null;
+  const movieId = movie.type !== 'Person' ? (movie?.tConst || movie?.tconst || movie?.id || '') : '';
+  
+  console.log('User ID:', userId);
+  console.log('Movie Id:', movieId);
+  console.log('Movie:', movie);
+
   useEffect(() => {
-    setBookmarked(isBookmarked);
-  }, [isBookmarked]);
+    const checkBookmarkStatus = async () => {
+      if (userId && movieId) {
+        console.log('Checking bookmark status for movie:', movie.tconst);
+        try {
+          const bookmarks = await getUserBookmarks(userId);
+          console.log('Bookmarks:', bookmarks);
+          const isBookmarked = bookmarks.some(b => b.tConst === movieId);
+          console.log('Bookmarked:', isBookmarked);
+          setBookmarked(isBookmarked);
+        } catch (error) {
+          console.error('Error checking bookmark status:', error);
+        }
+      }
+    };
+
+    checkBookmarkStatus();
+  }, [userId, movie]);
 
   const handleBookmark = async (e) => {
     e.preventDefault();
@@ -68,7 +93,7 @@ function MovieCard({ movie, isBookmarked = false, onBookmarkChange }) {
         <Card.Body>
           <div className="d-flex justify-content-between">
             <Card.Title>{title}</Card.Title>
-            {authTokens?.userId && (
+            {authTokens?.userId && movieId && (
               <Button
                 variant="link"
                 onClick={handleBookmark}

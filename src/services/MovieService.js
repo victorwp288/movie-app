@@ -60,14 +60,15 @@ export const getMovieDetails = async (id) => {
   }
 };
 
-export const addBookmark = async (userId, tconst) => {
+export const addBookmark = async (userId, tconst, note = "") => {
   try {
-    console.log('Adding bookmark:', { userId, tconst });
+    tconst = tconst.trim();
+    console.log('Adding bookmark:', { userId, tconst, note });
     
     if (!tconst) {
       throw new Error('Movie ID (tconst) is required');
     }
-
+    console.log('Fetching bookmark API URL:', `${API_URL}/users/${userId}/${tconst}/bookmark`);
     const response = await fetch(`${API_URL}/users/${userId}/${tconst}/bookmark`, {
       method: 'POST',
       headers: {
@@ -75,8 +76,10 @@ export const addBookmark = async (userId, tconst) => {
         'Accept': '*/*'
       },
       body: JSON.stringify({
-        note: "",
-        createdAt: new Date().toISOString()
+        userId: userId,
+        tconst: tconst,
+        note: note,
+        bookmarkDate: new Date().toISOString()
       })
     });
     
@@ -94,6 +97,9 @@ export const addBookmark = async (userId, tconst) => {
 };
 
 export const removeBookmark = async (userId, tconst) => {
+  console.log(tconst.length);
+  tconst = tconst.trim();
+  console.log('Removing bookmark:', `${API_URL}/users/${userId}/${tconst}/bookmark`);
   try {
     const response = await fetch(`${API_URL}/users/${userId}/${tconst}/bookmark`, {
       method: 'DELETE'
@@ -112,33 +118,43 @@ export const removeBookmark = async (userId, tconst) => {
 
 export const getUserBookmarks = async (userId) => {
   try {
-    const bookmarksResponse = await fetch(`${API_URL}/users/${userId}/bookmarks`);
-    if (!bookmarksResponse.ok) {
+    // Fetch bookmarks
+    const response = await fetch(`${API_URL}/users/${userId}/bookmarks`);
+    if (!response.ok) {
       throw new Error('Failed to fetch bookmarks');
     }
-    const bookmarks = await bookmarksResponse.json();
-    console.log('Raw bookmarks:', bookmarks);
+    const bookmarks = await response.json();
+    console.log('Bookmarks:', bookmarks);
 
-    // Get all movies in one request
-    const moviesResponse = await fetch(`${API_URL}/movies`);
-    if (!moviesResponse.ok) {
-      throw new Error('Failed to fetch movies');
-    }
-    const moviesData = await moviesResponse.json();
-    const movies = moviesData.items || [];
+    // Get unique bookmarks with cleaned tconst
+    const uniqueBookmarks = [...new Set(bookmarks.map(b => ({
+      ...b,
+      tconst: b.tconst.trim()
+    })))];
 
-    // Match movies with bookmarks
-    const bookmarkedMovies = movies.filter(movie => 
-      bookmarks.some(bookmark => bookmark.tconst === movie.tconst)
-    ).map(movie => ({
-      ...movie,
-      isBookmarked: true
-    }));
+    // Fetch movie details for each bookmark
+    const moviePromises = uniqueBookmarks.map(async (bookmark) => {
+      try {
+        const movieResponse = await fetch(`${API_URL}/movies/${bookmark.tconst}`);
+        if (!movieResponse.ok) return null;
+        
+        const movieData = await movieResponse.json();
+        return {
+          ...movieData,
+          note: bookmark.note,
+          bookmarkDate: bookmark.bookmarkDate
+        };
+      } catch {
+        return null;
+      }
+    });
 
-    console.log('Bookmarked movies:', bookmarkedMovies);
-    return bookmarkedMovies;
+    // Get all movie details and filter out failed requests
+    const movies = (await Promise.all(moviePromises)).filter(Boolean);
+    console.log('Bookmarked movies:', movies);
+    return movies;
   } catch (error) {
-    console.error('Error in getUserBookmarks:', error);
+    console.error('Error fetching bookmarks:', error);
     throw error;
   }
 };
@@ -159,7 +175,7 @@ export const searchMovies = async (query) => {
   }
 };
 
-export const rateMovie = async (userId, movieId, rating, review = "") => {
+export const rateMovie = async (userId, movieId, rating) => {
   try {
     const response = await fetch(
       `${API_URL}/users/${userId}/${movieId}/rating/create`,
@@ -168,20 +184,14 @@ export const rateMovie = async (userId, movieId, rating, review = "") => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          rating,
-          review,
-          reviewDate: new Date().toISOString()
-        }),
+        body: JSON.stringify({ rating }),
       }
     );
     if (!response.ok) {
-      throw new Error("Failed to rate movie");
+      console.error("Failed to rate movie");
     }
-    return await response.json();
   } catch (error) {
     console.error("Error rating movie", error);
-    throw error;
   }
 };
 
