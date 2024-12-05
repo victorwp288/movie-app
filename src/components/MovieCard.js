@@ -84,34 +84,32 @@ function MovieCard({ movie, isBookmarked = false, onBookmarkChange }) {
 
   const id = (movie?.tConst || movie?.tconst || movie?.id || '').trim();
   console.log('ID:', id);
-
-  const [imageUrl, setImageUrl] = useState("noImageAvailable"); 
+  const noImage = "../img/No_Image_Available.jpg";
+  const [imageUrl, setImageUrl] = useState(noImage); 
   const [type, setType] = useState('Unknown');
 
   useEffect(() => {
     const fetchAndSetImage = async () => {
-      if (!id) { //Avoid fetching if ID is empty or invalid.
+      if (!id) {
         return;
       }
       try {
         const imageData = await getImage(id);
-        setImageUrl(imageData.imageUrl || "noImageAvailable"); // Handle potential null values
+        setImageUrl(imageData.imageUrl || noImage); 
         if (type === 'Unknown' && imageData.type) {
           setType(imageData.type);
         }
       } catch (error) {
         console.error("Error fetching image:", error);
-        // Handle errors appropriately; maybe display an error message or use a default image
       }
     };
 
-    fetchAndSetImage(); // The function is now a clean asynchronous operation.  It does not directly update state variables that trigger this to run again.
+    fetchAndSetImage(); 
   }, [id]);
 
   console.log(imageUrl);
   console.log(type);
   const title = movie?.primaryTitle || movie?.originalTitle || movie?.name  || 'Untitled';
-  //const type = movie?.titleType || movie?.type ||imageData?.type || 'Unknown';
 
   if (!id) {
     console.warn('Movie card received invalid data:', movie);

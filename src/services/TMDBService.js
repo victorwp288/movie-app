@@ -15,10 +15,9 @@ export const getImage = async (imdbId) => {
     }
     const findData = await findResponse.json();
     console.log("Id:",imdbId);
-    console.log("TMDB data:", findData); // Log the full response data
+    console.log("TMDB data:", findData); 
 
     let imagePath = null;
-    //let type="unknown";
     
     if(findData.movie_results.length>0){
       imagePath = findData.movie_results[0].poster_path;
@@ -48,13 +47,12 @@ export const getImage = async (imdbId) => {
     }
     console.log("Image path:", imagePath);
     result.imageUrl = `https://image.tmdb.org/t/p/w200${imagePath}`;
-    //result.type = type;
     console.log("return:", result);
     return result;
     
 
   } catch (error) {
-    console.error("Error fetching person image:", error); // Log the specific error
+    console.error("Error fetching person image:", error);
     return result;
   }
 };
