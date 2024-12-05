@@ -4,12 +4,15 @@ import { Card, Button } from "react-bootstrap";
 import { FaBookmark, FaRegBookmark } from 'react-icons/fa';
 import { AuthContext } from "../context/AuthContext";
 import { addBookmark, removeBookmark, getUserBookmarks } from "../services/MovieService";
+import {getImage} from "../services/TMDBService";
+import { set } from "zod";
 
 function MovieCard({ movie, isBookmarked = false, onBookmarkChange }) {
   console.log('MovieCard component rendered with movie:', movie);
   console.log('onBookmarkChange:', onBookmarkChange);
   
   const [bookmarked, setBookmarked] = useState(isBookmarked);
+  //const [imageURL, setImageURL] = useState("../img/No_Image_Available.jpg");
   const [loading, setLoading] = useState(false);
   const { authTokens } = useContext(AuthContext);
   
@@ -78,9 +81,37 @@ function MovieCard({ movie, isBookmarked = false, onBookmarkChange }) {
     cursor: 'pointer'
   };
 
+
   const id = (movie?.tConst || movie?.tconst || movie?.id || '').trim();
-  const title = movie?.primaryTitle || movie?.originalTitle || movie?.name || 'Untitled';
-  const type = movie?.titleType || movie?.type || 'Unknown';
+  console.log('ID:', id);
+
+  const [imageUrl, setImageUrl] = useState("noImageAvailable"); 
+  const [type, setType] = useState('Unknown');
+
+  useEffect(() => {
+    const fetchAndSetImage = async () => {
+      if (!id) { //Avoid fetching if ID is empty or invalid.
+        return;
+      }
+      try {
+        const imageData = await getImage(id);
+        setImageUrl(imageData.imageUrl || "noImageAvailable"); // Handle potential null values
+        if (type === 'Unknown' && imageData.type) {
+          setType(imageData.type);
+        }
+      } catch (error) {
+        console.error("Error fetching image:", error);
+        // Handle errors appropriately; maybe display an error message or use a default image
+      }
+    };
+
+    fetchAndSetImage(); // The function is now a clean asynchronous operation.  It does not directly update state variables that trigger this to run again.
+  }, [id]);
+
+  console.log(imageUrl);
+  console.log(type);
+  const title = movie?.primaryTitle || movie?.originalTitle || movie?.name  || 'Untitled';
+  //const type = movie?.titleType || movie?.type ||imageData?.type || 'Unknown';
 
   if (!id) {
     console.warn('Movie card received invalid data:', movie);
@@ -92,6 +123,17 @@ function MovieCard({ movie, isBookmarked = false, onBookmarkChange }) {
       <Card className="h-100 mb-4">
         <Card.Body>
           <div className="d-flex justify-content-between">
+            <div className="images-for">
+              
+                    <img
+                      key={id}
+                      src={imageUrl}
+                      alt="Profile"
+                      className="profile-image"
+                    />
+                  
+              
+            </div>
             <Card.Title>{title}</Card.Title>
             {authTokens?.userId && movieId && (
               <Button
