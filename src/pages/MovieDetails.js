@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import { useParams } from "react-router-dom";
+import { useParams,useLocation } from "react-router-dom";
 import { getMovieDetails, addBookmark, rateMovie, getUserBookmarks, removeBookmark, getUserRating } from "../services/MovieService";
 import { Container, Button, Card, Row, Col, Badge, Spinner, Form } from "react-bootstrap";
 import { AuthContext } from "../context/AuthContext";
@@ -18,7 +18,10 @@ function MovieDetails() {
 
   const { authTokens } = useContext(AuthContext);
   const userId = authTokens ? authTokens.userId : null;
-
+  const location = useLocation() ;
+  console.log('location.state in MovieListPage:', location.state);
+  const imageUrl = location.state ? location.state.imageUrl : '';
+  
   useEffect(() => {
     const fetchMovieDetails = async () => {
       try {
@@ -158,6 +161,14 @@ function MovieDetails() {
             <Col md={8}>
               <div className="d-flex justify-content-between align-items-start">
                 <div>
+                  <div className="images-for">
+                    <img
+                      key={id}
+                      src={imageUrl}
+                      alt="Profile"
+                      className="profile-image"
+                    />
+                  </div>
                   <h1>{movie.primaryTitle}</h1>
                   {movie.originalTitle !== movie.primaryTitle && (
                     <h5 className="text-muted">Original Title: {movie.originalTitle}</h5>

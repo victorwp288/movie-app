@@ -12,7 +12,6 @@ function MovieCard({ movie, isBookmarked = false, onBookmarkChange }) {
   console.log('onBookmarkChange:', onBookmarkChange);
   
   const [bookmarked, setBookmarked] = useState(isBookmarked);
-  //const [imageURL, setImageURL] = useState("../img/No_Image_Available.jpg");
   const [loading, setLoading] = useState(false);
   const { authTokens } = useContext(AuthContext);
   
@@ -81,12 +80,13 @@ function MovieCard({ movie, isBookmarked = false, onBookmarkChange }) {
     cursor: 'pointer'
   };
 
-
+  const [linkTo, setLinkTo] = useState('movie');
+  
   const id = (movie?.tConst || movie?.tconst || movie?.id || '').trim();
   console.log('ID:', id);
   const noImage = "../img/No_Image_Available.jpg";
   const [imageUrl, setImageUrl] = useState(noImage); 
-  const [type, setType] = useState('Unknown');
+  const [type, setType] = useState(movie?.type||'Unknown');
 
   useEffect(() => {
     const fetchAndSetImage = async () => {
@@ -109,6 +109,16 @@ function MovieCard({ movie, isBookmarked = false, onBookmarkChange }) {
 
   console.log(imageUrl);
   console.log(type);
+
+  
+  
+  useEffect(() => {
+    if (type === 'person' || type === 'Person') {
+      setLinkTo('person');
+    }
+  }, [type]); // Dependencies added here
+
+  
   const title = movie?.primaryTitle || movie?.originalTitle || movie?.name  || 'Untitled';
 
   if (!id) {
@@ -117,20 +127,17 @@ function MovieCard({ movie, isBookmarked = false, onBookmarkChange }) {
   }
 
   return (
-    <Link to={`/movie/${id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+    <Link to={`/${linkTo}/${id}`} state={{imageUrl,title}} style={{ textDecoration: 'none', color: 'inherit' }}>
       <Card className="h-100 mb-4">
         <Card.Body>
           <div className="d-flex justify-content-between">
             <div className="images-for">
-              
-                    <img
-                      key={id}
-                      src={imageUrl}
-                      alt="Profile"
-                      className="profile-image"
-                    />
-                  
-              
+              <img
+                key={id}
+                src={imageUrl}
+                alt="Profile"
+                className="profile-image"
+              />
             </div>
             <Card.Title>{title}</Card.Title>
             {authTokens?.userId && movieId && (
