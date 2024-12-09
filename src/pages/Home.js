@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import MovieCard from "../components/MovieCard";
 import { getPopularMovies } from "../services/MovieService";
 import { Container, Row, Col, Button, Form } from "react-bootstrap";
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 function Home() {
   const [movies, setMovies] = useState([]);
@@ -15,6 +16,11 @@ function Home() {
     hasNextPage: false,
     hasPrevPage: false
   });
+
+  useEffect(() => {
+    // Dynamically import Bootstrap's JavaScript
+    import('bootstrap/dist/js/bootstrap.bundle.min.js');
+  }, []);
 
   useEffect(() => {
     const fetchMovies = async () => {
@@ -33,7 +39,7 @@ function Home() {
   }, [page, pageSize]);
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return <div className="text-white">Error: {error}</div>;
   }
 
   const handleNextPage = () => {
@@ -54,46 +60,89 @@ function Home() {
   };
 
   return (
-    <Container>
-      <Row>
-        {movies.map((movie) => (
-          <Col key={movie.tconst} xs={12} md={6} lg={4}>
-            <MovieCard movie={movie} />
-          </Col>
-        ))}
-      </Row>
-      <div className="d-flex justify-content-between align-items-center mt-3">
-        <Button
-          variant="primary"
-          onClick={handlePreviousPage}
-          disabled={!pagination.hasPrevPage}
-        >
-          Previous
-        </Button>
-        <span>
-          Page {pagination.currentPage + 1} of {pagination.totalPages}
-        </span>
-        <Button 
-          variant="primary" 
-          onClick={handleNextPage}
-          disabled={!pagination.hasNextPage}
-        >
-          Next
-        </Button>
+    <div className="min-vh-100 bg-dark">
+
+      {/* Hero Section */}
+      <div className="position-relative" style={{ height: '600px' }}>
+        <img
+          src="https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=2000"
+          alt="Featured Movie"
+          className="w-100 h-100 object-fit-cover position-absolute"
+          style={{ zIndex: -1 }}
+        />
+        <div className="position-absolute w-100 h-100" 
+             style={{ background: 'linear-gradient(90deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%)' }}>
+          <div className="container h-100">
+            <div className="row h-100 align-items-center">
+              <div className="col-12 col-md-6 text-white">
+                <h1 className="display-4 fw-bold mb-4">Featured Movie Title</h1>
+                <p className="lead mb-4">
+                  A compelling description of the featured movie that captures attention and
+                  drives interest in watching it.
+                </p>
+                <button className="btn btn-warning btn-lg px-4">Watch Now</button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <Form.Group controlId="pageSizeSelect" className="mt-3">
-        <Form.Label>Movies per page:</Form.Label>
-        <Form.Control
-          as="select"
-          value={pageSize}
-          onChange={handlePageSizeChange}
-        >
-          <option value={5}>5</option>
-          <option value={10}>10</option>
-          <option value={20}>20</option>
-        </Form.Control>
-      </Form.Group>
-    </Container>
+
+      {/* Popular Movies Section */}
+      <Container className="py-5">
+        <h2 className="text-white mb-4">Popular Movies</h2>
+        <Row className="g-4">
+          {movies.map((movie) => (
+            <Col key={movie.tconst} xs={12} sm={6} md={4} lg={3}>
+              <MovieCard movie={movie} />
+            </Col>
+          ))}
+        </Row>
+        
+        <div className="d-flex justify-content-between align-items-center mt-4">
+          <Button
+            variant="warning"
+            onClick={handlePreviousPage}
+            disabled={!pagination.hasPrevPage}
+          >
+            Previous
+          </Button>
+          <span className="text-white">
+            Page {pagination.currentPage + 1} of {pagination.totalPages}
+          </span>
+          <Button 
+            variant="warning" 
+            onClick={handleNextPage}
+            disabled={!pagination.hasNextPage}
+          >
+            Next
+          </Button>
+        </div>
+        
+        <Form.Group controlId="pageSizeSelect" className="mt-3">
+          <Form.Label className="text-white">Movies per page:</Form.Label>
+          <Form.Select
+            value={pageSize}
+            onChange={handlePageSizeChange}
+            className="bg-dark text-white"
+          >
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+          </Form.Select>
+        </Form.Group>
+      </Container>
+
+      {/* Footer */}
+      <footer className="bg-black text-white-50 py-4 mt-5">
+        <div className="container">
+          <div className="row">
+            <div className="col-12 text-center">
+              <p className="mb-0">© 2024 IMDb Clone. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
   );
 }
 

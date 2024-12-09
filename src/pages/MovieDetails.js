@@ -1,10 +1,26 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useParams } from "react-router-dom";
-import { getMovieDetails, addBookmark, rateMovie, getUserBookmarks, removeBookmark, getUserRating } from "../services/MovieService";
-import { Container, Button, Card, Row, Col, Badge, Spinner, Form } from "react-bootstrap";
+import {
+  getMovieDetails,
+  addBookmark,
+  rateMovie,
+  getUserBookmarks,
+  removeBookmark,
+  getUserRating,
+} from "../services/MovieService";
+import {
+  Container,
+  Button,
+  Card,
+  Row,
+  Col,
+  Badge,
+  Spinner,
+  Form,
+} from "react-bootstrap";
 import { AuthContext } from "../context/AuthContext";
-import { FaStar, FaRegStar, FaBookmark } from 'react-icons/fa';
-
+import { FaStar, FaRegStar, FaBookmark } from "react-icons/fa";
+import { WordCloud } from "../components/WordCloud";
 function MovieDetails() {
   const { id } = useParams();
   const [movie, setMovie] = useState(null);
@@ -19,19 +35,42 @@ function MovieDetails() {
   const { authTokens } = useContext(AuthContext);
   const userId = authTokens ? authTokens.userId : null;
 
+  const words = [
+    { text: "React", size: 60 },
+    { text: "JavaScript", size: 55 },
+    { text: "TypeScript", size: 50 },
+    { text: "Node.js", size: 45 },
+    { text: "HTML", size: 40 },
+    { text: "CSS", size: 40 },
+    { text: "Next.js", size: 35 },
+    { text: "Redux", size: 30 },
+    { text: "GraphQL", size: 30 },
+    { text: "Webpack", size: 25 },
+    { text: "Babel", size: 25 },
+    { text: "Jest", size: 20 },
+    { text: "ESLint", size: 20 },
+    { text: "Sass", size: 20 },
+    { text: "Tailwind", size: 20 },
+    { text: "Vue", size: 15 },
+    { text: "Angular", size: 15 },
+    { text: "Svelte", size: 15 },
+    { text: "Ember", size: 15 },
+    { text: "jQuery", size: 10 },
+  ];
+
   useEffect(() => {
     const fetchMovieDetails = async () => {
       try {
         setLoading(true);
         setError(null);
         const cleanId = id.trim();
-        console.log('Fetching movie details for ID:', cleanId);
+        console.log("Fetching movie details for ID:", cleanId);
         const data = await getMovieDetails(cleanId);
-        console.log('Movie details:', data);
+        console.log("Movie details:", data);
         setMovie(data);
       } catch (err) {
-        console.error('Error fetching movie details:', err);
-        setError(err.message || 'Failed to load movie details');
+        console.error("Error fetching movie details:", err);
+        setError(err.message || "Failed to load movie details");
       } finally {
         setLoading(false);
       }
@@ -47,10 +86,12 @@ function MovieDetails() {
       if (userId && movie?.tConst) {
         try {
           const bookmarks = await getUserBookmarks(userId);
-          const isMovieBookmarked = bookmarks.some(b => b.tConst === movie.tConst);
+          const isMovieBookmarked = bookmarks.some(
+            (b) => b.tConst === movie.tConst
+          );
           setIsBookmarked(isMovieBookmarked);
         } catch (error) {
-          console.error('Error checking bookmark status:', error);
+          console.error("Error checking bookmark status:", error);
         }
       }
     };
@@ -64,7 +105,7 @@ function MovieDetails() {
             setReview(userRating.review || "");
           }
         } catch (error) {
-          console.error('Error fetching user rating:', error);
+          console.error("Error fetching user rating:", error);
         }
       }
     };
@@ -81,8 +122,8 @@ function MovieDetails() {
 
     const movieId = movie?.tConst;
     if (!movieId) {
-      console.error('No movie ID available:', movie);
-      alert('Cannot bookmark this movie');
+      console.error("No movie ID available:", movie);
+      alert("Cannot bookmark this movie");
       return;
     }
 
@@ -95,8 +136,8 @@ function MovieDetails() {
       }
       setIsBookmarked(!isBookmarked);
     } catch (error) {
-      console.error('Error updating bookmark:', error);
-      alert('Failed to update bookmark');
+      console.error("Error updating bookmark:", error);
+      alert("Failed to update bookmark");
     } finally {
       setBookmarkLoading(false);
     }
@@ -160,23 +201,26 @@ function MovieDetails() {
                 <div>
                   <h1>{movie.primaryTitle}</h1>
                   {movie.originalTitle !== movie.primaryTitle && (
-                    <h5 className="text-muted">Original Title: {movie.originalTitle}</h5>
+                    <h5 className="text-muted">
+                      Original Title: {movie.originalTitle}
+                    </h5>
                   )}
                 </div>
                 {userId && (
-                  <Button 
+                  <Button
                     variant={isBookmarked ? "warning" : "outline-warning"}
                     onClick={handleBookmark}
                     disabled={bookmarkLoading}
                   >
-                    <FaBookmark /> {isBookmarked ? 'Bookmarked' : 'Bookmark'}
+                    <FaBookmark /> {isBookmarked ? "Bookmarked" : "Bookmark"}
                   </Button>
                 )}
               </div>
 
               <div className="mt-3">
                 <Badge bg="secondary" className="me-2">
-                  {movie.startYear}{movie.endYear && ` - ${movie.endYear}`}
+                  {movie.startYear}
+                  {movie.endYear && ` - ${movie.endYear}`}
                 </Badge>
                 <Badge bg="secondary" className="me-2">
                   {movie.runTimeMinutes} min
@@ -189,7 +233,10 @@ function MovieDetails() {
               </div>
 
               <div className="mt-4">
-                <h5>Average Rating: {movie.averageRating}/10 ({movie.numVotes} votes)</h5>
+                <h5>
+                  Average Rating: {movie.averageRating}/10 ({movie.numVotes}{" "}
+                  votes)
+                </h5>
                 {userId && (
                   <div className="mt-3">
                     <h6>Your Rating:</h6>
@@ -197,20 +244,28 @@ function MovieDetails() {
                       {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
                         <Button
                           key={num}
-                          variant={num <= rating ? "warning" : "outline-warning"}
+                          variant={
+                            num <= rating ? "warning" : "outline-warning"
+                          }
                           onClick={() => setRating(num)}
                           disabled={ratingLoading}
                           size="sm"
-                          style={{ minWidth: '35px' }}
+                          style={{ minWidth: "35px" }}
                         >
-                          {num <= rating ? <FaStar size={12} /> : <FaRegStar size={12} />}
+                          {num <= rating ? (
+                            <FaStar size={12} />
+                          ) : (
+                            <FaRegStar size={12} />
+                          )}
                         </Button>
                       ))}
                     </div>
-                    <Form onSubmit={(e) => {
-                      e.preventDefault();
-                      handleRating(rating);
-                    }}>
+                    <Form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        handleRating(rating);
+                      }}
+                    >
                       <Form.Group className="mb-3">
                         <Form.Label>Your Review (optional):</Form.Label>
                         <Form.Control
@@ -221,8 +276,8 @@ function MovieDetails() {
                           placeholder="Write your review here..."
                         />
                       </Form.Group>
-                      <Button 
-                        type="submit" 
+                      <Button
+                        type="submit"
                         variant="primary"
                         disabled={!rating || ratingLoading}
                       >
@@ -239,7 +294,7 @@ function MovieDetails() {
                             Submitting...
                           </>
                         ) : (
-                          'Submit Rating'
+                          "Submit Rating"
                         )}
                       </Button>
                     </Form>
@@ -252,11 +307,7 @@ function MovieDetails() {
                   <h5>Genres:</h5>
                   <div>
                     {movie.genres.map((genre, index) => (
-                      <Badge 
-                        key={index} 
-                        bg="primary" 
-                        className="me-2"
-                      >
+                      <Badge key={index} bg="primary" className="me-2">
                         {genre}
                       </Badge>
                     ))}
@@ -266,11 +317,17 @@ function MovieDetails() {
 
               <div className="mt-4">
                 <h5>Additional Information:</h5>
-                <p><strong>IMDB ID:</strong> {movie.tConst}</p>
+                <p>
+                  <strong>IMDB ID:</strong> {movie.tConst}
+                </p>
                 {movie.url && (
                   <p>
-                    <strong>More Info:</strong>{' '}
-                    <a href={movie.url} target="_blank" rel="noopener noreferrer">
+                    <strong>More Info:</strong>{" "}
+                    <a
+                      href={movie.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       View on IMDB
                     </a>
                   </p>
@@ -280,6 +337,14 @@ function MovieDetails() {
           </Row>
         </Card.Body>
       </Card>
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="bg-white p-8 rounded-lg shadow-lg">
+          <h1 className="text-3xl font-bold mb-6 text-center">
+            {movie.primaryTitle} Word Cloud
+          </h1>
+          <WordCloud words={words} width={600} height={400} />
+        </div>
+      </div>
     </Container>
   );
 }

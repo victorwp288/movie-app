@@ -2,6 +2,7 @@ import React, { useContext, useState } from "react";
 import { Navbar, Nav, Container, NavDropdown, Form, Button } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 function AppNavbar() {
   const { authTokens, logout } = useContext(AuthContext);
@@ -23,36 +24,45 @@ function AppNavbar() {
   };
 
   return (
-    <Navbar bg="dark" variant="dark" expand="lg">
+    <nav className="navbar navbar-expand-lg navbar-dark bg-black">
       <Container>
-        <Navbar.Brand as={Link} to="/">Movie App</Navbar.Brand>
-        <Navbar.Toggle aria-controls="basic-navbar-nav" />
-        <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="me-auto">
-            <Nav.Link as={Link} to="/">Home</Nav.Link>
-          </Nav>
-          
-          <Form 
-            className="d-flex mx-auto" 
-            onSubmit={handleSearch}
-            style={{ minWidth: '300px' }}
-          >
-            <Form.Control
-              type="search"
-              placeholder="Search movies..."
-              className="me-2"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <Button variant="outline-light" type="submit">Search</Button>
+        <Link className="navbar-brand" to="/" style={{ color: '#F5C518', fontWeight: 'bold' }}>
+          IMDb
+        </Link>
+        <button 
+          className="navbar-toggler" 
+          type="button" 
+          data-bs-toggle="collapse" 
+          data-bs-target="#navbarNav"
+        >
+          <span className="navbar-toggler-icon"></span>
+        </button>
+        <div className="collapse navbar-collapse" id="navbarNav">
+          <Form className="d-flex mx-auto" onSubmit={handleSearch}>
+            <div className="input-group">
+              <Form.Control
+                type="search"
+                placeholder="Search IMDb"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="form-control"
+              />
+              <Button 
+                variant="outline-warning" 
+                type="submit"
+              >
+                Search
+              </Button>
+            </div>
           </Form>
-
-          <Nav>
+          
+          <ul className="navbar-nav ms-auto">
             {authTokens ? (
               <NavDropdown 
                 title={<i className="fas fa-user"></i>} 
                 id="basic-nav-dropdown" 
                 align="end"
+                className="nav-link"
               >
                 <NavDropdown.Item as={Link} to="/profile">
                   Profile
@@ -64,14 +74,21 @@ function AppNavbar() {
               </NavDropdown>
             ) : (
               <>
-                <Nav.Link as={Link} to="/login">Login</Nav.Link>
-                <Nav.Link as={Link} to="/signup">Sign Up</Nav.Link>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/login">Sign In</Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/signup">Sign Up</Link>
+                </li>
               </>
             )}
-          </Nav>
-        </Navbar.Collapse>
+            <li className="nav-item">
+              <Link className="nav-link" to="/watchlist">Watchlist</Link>
+            </li>
+          </ul>
+        </div>
       </Container>
-    </Navbar>
+    </nav>
   );
 }
 
