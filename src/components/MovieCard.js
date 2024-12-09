@@ -4,6 +4,8 @@ import { Card, Button } from "react-bootstrap";
 import { FaBookmark, FaRegBookmark } from 'react-icons/fa';
 import { AuthContext } from "../context/AuthContext";
 import { addBookmark, removeBookmark, getUserBookmarks } from "../services/MovieService";
+import {getImage} from "../services/TMDBService";
+import { set } from "zod";
 
 function MovieCard({ movie, isBookmarked = false, onBookmarkChange }) {
   console.log('MovieCard component rendered with movie:', movie);
@@ -12,6 +14,7 @@ function MovieCard({ movie, isBookmarked = false, onBookmarkChange }) {
   const [bookmarked, setBookmarked] = useState(isBookmarked);
   const [loading, setLoading] = useState(false);
   const { authTokens } = useContext(AuthContext);
+  
   
   const userId = authTokens ? authTokens.userId : null;
   const movieId = movie.type !== 'Person' ? (movie?.tConst || movie?.tconst || movie?.id || '') : '';
@@ -78,9 +81,50 @@ function MovieCard({ movie, isBookmarked = false, onBookmarkChange }) {
     cursor: 'pointer'
   };
 
+  const [linkTo, setLinkTo] = useState('movie');
+  
   const id = (movie?.tConst || movie?.tconst || movie?.id || '').trim();
-  const title = movie?.primaryTitle || movie?.originalTitle || movie?.name || 'Untitled';
-  const type = movie?.titleType || movie?.type || 'Unknown';
+  console.log('ID:', id);
+  const noImage = "../img/No_Image_Available.jpg";
+  const [imageUrl, setImageUrl] = useState(noImage); 
+  const [overView, setOverView] = useState(movie?.overView || '');
+  const [type, setType] = useState(movie?.type||'Unknown');
+
+  if(type === 'Person' ) {setType('person');}
+    
+  useEffect(() => {
+    const fetchAndSetImage = async () => {
+      if (!id) {
+        return;
+      }
+      try {
+        const imageData = await getImage(id);
+        setImageUrl(imageData.imageUrl || noImage); 
+        setOverView(imageData.overView || '');
+        if (type === 'Unknown' && imageData.type) {
+          setType(imageData.type);
+        }
+      } catch (error) {
+        console.error("Error fetching image:", error);
+      }
+    };
+
+    fetchAndSetImage(); 
+  }, [id]);
+
+  console.log(imageUrl);
+  console.log(type);
+
+  
+  
+  useEffect(() => {
+    if (type === 'person'){
+      setLinkTo('person');
+    }
+  }, [type]); // Dependencies added here
+
+  
+  const title = movie?.primaryTitle || movie?.originalTitle || movie?.name  || 'Untitled';
 
   if (!id) {
     console.warn('Movie card received invalid data:', movie);
@@ -88,10 +132,18 @@ function MovieCard({ movie, isBookmarked = false, onBookmarkChange }) {
   }
 
   return (
-    <Link to={`/movie/${id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+    <Link to={`/${linkTo}/${id}`} state={{imageUrl,title,type,overView}} style={{ textDecoration: 'none', color: 'inherit' }}>
       <Card className="h-100 mb-4">
         <Card.Body>
           <div className="d-flex justify-content-between">
+            <div className="images-for">
+              <img
+                key={id}
+                src={imageUrl}
+                alt="Profile"
+                className="profile-image"
+              />
+            </div>
             <Card.Title>{title}</Card.Title>
             {authTokens?.userId && movieId && (
               <Button
