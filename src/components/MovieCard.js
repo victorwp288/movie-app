@@ -15,6 +15,7 @@ function MovieCard({ movie, isBookmarked = false, onBookmarkChange }) {
   const [loading, setLoading] = useState(false);
   const { authTokens } = useContext(AuthContext);
   
+  
   const userId = authTokens ? authTokens.userId : null;
   const movieId = movie.type !== 'Person' ? (movie?.tConst || movie?.tconst || movie?.id || '') : '';
   
@@ -86,8 +87,11 @@ function MovieCard({ movie, isBookmarked = false, onBookmarkChange }) {
   console.log('ID:', id);
   const noImage = "../img/No_Image_Available.jpg";
   const [imageUrl, setImageUrl] = useState(noImage); 
+  const [overView, setOverView] = useState(movie?.overView || '');
   const [type, setType] = useState(movie?.type||'Unknown');
 
+  if(type === 'Person' ) {setType('person');}
+    
   useEffect(() => {
     const fetchAndSetImage = async () => {
       if (!id) {
@@ -96,6 +100,7 @@ function MovieCard({ movie, isBookmarked = false, onBookmarkChange }) {
       try {
         const imageData = await getImage(id);
         setImageUrl(imageData.imageUrl || noImage); 
+        setOverView(imageData.overView || '');
         if (type === 'Unknown' && imageData.type) {
           setType(imageData.type);
         }
@@ -113,7 +118,7 @@ function MovieCard({ movie, isBookmarked = false, onBookmarkChange }) {
   
   
   useEffect(() => {
-    if (type === 'person' || type === 'Person') {
+    if (type === 'person'){
       setLinkTo('person');
     }
   }, [type]); // Dependencies added here
@@ -127,7 +132,7 @@ function MovieCard({ movie, isBookmarked = false, onBookmarkChange }) {
   }
 
   return (
-    <Link to={`/${linkTo}/${id}`} state={{imageUrl,title}} style={{ textDecoration: 'none', color: 'inherit' }}>
+    <Link to={`/${linkTo}/${id}`} state={{imageUrl,title,type,overView}} style={{ textDecoration: 'none', color: 'inherit' }}>
       <Card className="h-100 mb-4">
         <Card.Body>
           <div className="d-flex justify-content-between">
