@@ -6,6 +6,7 @@ import { AuthContext } from "../context/AuthContext";
 import { FaStar, FaRegStar, FaBookmark } from 'react-icons/fa';
 import {getImage} from "../services/TMDBService";
 import { set } from "zod";
+import { WordCloud } from "../components/WordCloud";
 
 function MovieDetails() {
   const { id } = useParams();
@@ -26,6 +27,17 @@ function MovieDetails() {
   const location = useLocation() ;
   console.log('location.state in MovieListPage:', location.state);
     
+
+	const words = [
+		{text: 'React', size: 60},
+		{text: 'JavaScript', size: 55},
+		{text: 'Node.js', size: 50},
+		{text: 'Express', size: 45},
+		{text: 'MongoDB', size: 40},
+		{text: 'HTML', size: 35},
+		{text: 'CSS', size: 30},
+	]
+
   useEffect(() => {
     const fetchImage = async () => {
       const imageDataNType = await getImage(id.trim());
