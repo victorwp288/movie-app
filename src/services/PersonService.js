@@ -2,7 +2,7 @@ const API_URL = process.env.REACT_APP_API_URL;
 
 export const getPersonDetails = async (nconst) => {
     try {
-        const url = `${API_URL}/users/person/${encodeURIComponent(nconst)}`;
+        const url = `${API_URL}/persons/${encodeURIComponent(nconst)}`;
         console.log('Fetching person details with ID:', nconst, 'URL:', url);
         const response = await fetch(url);
 
