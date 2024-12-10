@@ -125,6 +125,7 @@ function MovieCard({ movie, isBookmarked = false, onBookmarkChange }) {
 
   
   const title = movie?.primaryTitle || movie?.originalTitle || movie?.name  || 'Untitled';
+  console.log(title);
 
   if (!id) {
     console.warn('Movie card received invalid data:', movie);
