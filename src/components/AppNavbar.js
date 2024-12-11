@@ -2,11 +2,15 @@ import React, { useContext, useState } from "react";
 import { Navbar, Nav, Container, NavDropdown, Form, Button } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import Dropdown from 'react-bootstrap/Dropdown';
+import DropdownButton from 'react-bootstrap/DropdownButton';
+import InputGroup from 'react-bootstrap/InputGroup';
 
 function AppNavbar() {
   const { authTokens, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchType, setSearchType] = useState("all");
 
   const handleLogout = () => {
     logout();
@@ -17,8 +21,8 @@ function AppNavbar() {
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchTerm.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
-      setSearchTerm("");
+      navigate(`/search?q=${encodeURIComponent(searchTerm.trim())}&type=${encodeURIComponent(searchType)}`);
+      //setSearchTerm("");
     }
   };
 
@@ -31,22 +35,28 @@ function AppNavbar() {
           <Nav className="me-auto">
             <Nav.Link as={Link} to="/">Home</Nav.Link>
           </Nav>
-          
-          <Form 
-            className="d-flex mx-auto" 
-            onSubmit={handleSearch}
-            style={{ minWidth: '300px' }}
-          >
-            <Form.Control
-              type="search"
-              placeholder="Search movies..."
-              className="me-2"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <Button variant="outline-light" type="submit">Search</Button>
-          </Form>
-
+            <row>
+            <InputGroup className="mb-3">
+              <Form onSubmit={handleSearch} style={{ display: 'flex', alignItems: 'center' }}> {/* Add flexbox styles */}
+                <DropdownButton title={searchType} id="input-group-dropdown-1" style={{ marginRight: '10px' }}> {/* Added margin for spacing */}
+                  <Dropdown.Item onClick={() => setSearchType("All")}>All</Dropdown.Item>
+                  <Dropdown.Item onClick={() => setSearchType("Titles")}>Titles</Dropdown.Item>
+                  <Dropdown.Item onClick={() => setSearchType("Persons")}>Persons</Dropdown.Item>
+                  <Dropdown.Item onClick={() => setSearchType("Database")}>Database</Dropdown.Item>
+                </DropdownButton>
+                <Form.Control
+                  type="search"
+                  placeholder="Search movies..."
+                  className="me-2"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  aria-label="Search movies"
+                  style={{ flexGrow: 1 }} // This allows the search bar to take up available space
+                />
+                <Button variant="outline-light" type="submit" style={{ marginLeft: '10px' }}>Search</Button> {/* Added margin for spacing */}
+              </Form>
+            </InputGroup>
+            </row>
           <Nav>
             {authTokens ? (
               <NavDropdown 
