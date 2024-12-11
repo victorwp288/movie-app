@@ -1,16 +1,107 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams,useLocation } from "react-router-dom";
-import { getMovieDetails, addBookmark, rateMovie, getUserBookmarks, removeBookmark, getUserRating } from "../services/MovieService";
+import { getPersonDetails } from "../services/PersonService";
+import {getMovieDetails} from "../services/MovieService";
 import { Container, Button, Card, Row, Col, Badge, Spinner, Form } from "react-bootstrap";
-import { AuthContext } from "../context/AuthContext";
-import { FaStar, FaRegStar, FaBookmark } from 'react-icons/fa';
+import MovieCard from "../components/MovieCard";
 
 function PersonDetails() {
     const location = useLocation() ;
-    console.log('location.state in MovieListPage:', location.state);
+    //console.log('location.state in MovieListPage:', location.state);
     const imageUrl = location.state ? location.state.imageUrl : '';
     const title = location.state ? location.state.title : '';
     const { id } = useParams();
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [person, setPerson] = useState(null);
+    const [yearOfBirth, setYearOfBirth] = useState(null);
+    const [yearOfDeath, setYearOfDeath] = useState(null);
+    const [professions, setProfessions] = useState([]);
+    const [movies, setMovies] = useState([]);
+    
+    useEffect(() => {
+        const fetchPersonDetails = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+                const nconst = id.trim();
+                console.log('Fetching person details for Nconst:', nconst);
+                const data = await getPersonDetails(nconst);
+                console.log('Person details:', data);
+                setPerson(data.data); // Corrected spelling here
+            } catch (err) {
+                console.error('Error fetching Person details:', err);
+                setError(err.message || 'Failed to load Person details');
+            } finally {
+                setLoading(false);
+            }
+        };
+        if (id) {
+            fetchPersonDetails();
+        }
+    }, [id]);  
+
+    useEffect(() => {
+        if (person) {
+            console.log('Person:', person);
+            const trimmedBYear = person.birthYear.trim();
+            setYearOfBirth(trimmedBYear === "" ? null : trimmedBYear);
+            const trimmedDYear = person.deathYear.trim();
+            setYearOfDeath(trimmedDYear === "" ? null : trimmedDYear);
+            setProfessions(person.personProfessions);
+            //setKnownFor(person.personKnownTitles);
+            const fetchMovies = async () => {
+              if (person.personKnownTitles.length > 0) {
+                try {
+                  const moviePromises = person.personKnownTitles.map((movieKF) =>
+                    getMovieDetails(movieKF.tconst)
+                  );
+                  const movies = await Promise.all(moviePromises);
+                  setMovies(movies); // Update state with fetched movies
+                } catch (error) {
+                  console.error("Error fetching movies:", error);
+                  setError("Failed to load movies."); //Set error message
+                }
+              }
+            };
+          
+            fetchMovies();
+        }
+    }, [person]);
+
+    console.log('Movies:', movies.length);
+
+    if (loading) {
+        return (
+          <Container className="mt-4 text-center">
+            <Spinner animation="border" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </Spinner>
+          </Container>
+        );
+      }
+    
+      if (error) {
+        return (
+          <Container className="mt-4">
+            <div className="alert alert-danger" role="alert">
+              {error}
+            </div>
+          </Container>
+        );
+      }
+    
+      if (!person) {
+        return (
+          <Container className="mt-4">
+            <div className="alert alert-warning" role="alert">
+                Person not found
+            </div>
+          </Container>
+        );
+      }
+    
+    
     return (
         <Container className="mt-4">
             <Card>
@@ -27,15 +118,60 @@ function PersonDetails() {
                                             className="profile-image"
                                         />
                                     </div>
-                                    <h1>{title}</h1>
+                                    <h2>{title}</h2>
                                 </div>
-                                <div>
-                                    <h1>PersonID:{id}</h1>
-                                </div>
-                            </div>
+                                {yearOfBirth && <div>
+                                    <h5>Birth Year:{yearOfBirth}</h5>
+                                </div>}
+                                {yearOfDeath && <div>
+                                    <h5>Death Day:{yearOfDeath}</h5>
+                                </div>}
+                                {professions && (
+                                  <div className="mt-3">
+                                    {professions.length > 0 && (
+                                      <>Professions: {/* React Fragment */}
+                                        {professions.map((p) => (
+                                          <Badge bg="secondary" className="me-2" key={p.id}>
+                                            {p.profession.charAt(0).toUpperCase() + p.profession.slice(1)}
+                                          </Badge>
+                                        ))}
+                                      </>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
                         </Col>
                     </Row>
                 </Card.Body>
+            </Card>
+             {/* Title Known For */}
+            <Card className="mt-4">
+                <Card.Header as="h4">Person is Known For:</Card.Header>
+                <Card.Body>
+                  {movies.length === 0 ? (
+                      <p className="text-center">No Movies Avelable for the Person.</p>
+                  ) : (
+                    <Row>
+                    {movies.map((movie) => (
+                      <Col key={movie.tconst} xs={12} md={6} lg={4}>
+                        <MovieCard movie={movie} />
+                      </Col>
+                    ))}
+                  </Row>
+                  )}
+                </Card.Body>
+            </Card>
+            <Card>
+              <Card.Body>
+                  <Row>
+                      <Col md={8}>
+                        <div className="mt-4">
+                          <h5>Additional Information:</h5>
+                          <p><strong>IMDB ID:</strong> {id}</p>
+                        </div>
+                      </Col>
+                  </Row>
+              </Card.Body>
             </Card>
         </Container>
     );

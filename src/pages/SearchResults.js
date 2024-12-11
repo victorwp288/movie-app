@@ -12,152 +12,95 @@ import { Container, Row, Col, Form, Button, ButtonGroup, Spinner } from "react-b
 import { useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
+function lowercaseFirstLetter(str) {
+  if (str.length === 0) return str; // Handle empty strings
+  return str.charAt(0).toLowerCase() + str.slice(1);
+}
+
 function useQuery() {
   return new URLSearchParams(useLocation().search);
 }
 
 function SearchResults() {
   const query = useQuery();
-  const searchQuery = query.get("q") || "";
+  const searchTerm = query.get("q") || "";
+  const searchType = lowercaseFirstLetter(query.get("type")) || "titles";
   const [movies, setMovies] = useState([]);
-  const [searchTerm, setSearchTerm] = useState(searchQuery);
-  const [searchType, setSearchType] = useState("titles");
+  //const [searchTerm, setSearchTerm] = useState(searchQuery);
+  //const [searchType, setSearchType] = useState(searchTypeFromNev);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchDuration, setSearchDuration] = useState(null);
   
   const { authTokens } = useContext(AuthContext);
   const userId = authTokens?.userId;
-
-  const performSearch = useCallback(async () => {
-    if (!searchTerm) return;
-    
-    setLoading(true);
-    setError(null);
-    const startTime = performance.now();
-    
-    try {
-      let results;
-      const searchTermTrimmed = searchTerm.trim();
+  
+  useEffect(() => {
+    const performSearch = async () => {
+      if (!searchTerm || !searchType) return;
       
-      console.log('Performing search with:', { searchTermTrimmed, searchType });
+      setLoading(true);
+      setError(null);
+      const startTime = performance.now();
+      //searchType=lowercaseFirstLetter(searchType);
+      console.log('searchTerm:', searchTerm);
+      console.log('searchType:', searchType);
       
-      switch (searchType) {
-        case "all":
-          results = await searchAllMovies(searchTermTrimmed);
-          break;
-        case "titles":
-          results = await searchMovieTitles(searchTermTrimmed);
-          console.log(results);
-          break;
-        case "database":
-          results = userId
-            ? await searchDatabaseForUser(searchTermTrimmed, userId)
-            : await searchDatabaseTitles(searchTermTrimmed);
-          break;
-        case "persons":
-          results = await searchPersons(searchTermTrimmed);
-          break;
-        default:
-          results = await searchMovieTitles(searchTermTrimmed);
-      }
-      
-      console.log('Search results:', results);
-      
-      if (Array.isArray(results)) {
-        setMovies(results);
-      } else {
-        console.error('Unexpected results format:', results);
+      try {
+        let results;
+        const searchTermTrimmed = searchTerm.trim();
+        
+        console.log('Performing search with:', { searchTermTrimmed, searchType });
+        
+        switch (searchType) {
+          case "all":
+            results = await searchAllMovies(searchTermTrimmed);
+            break;
+          case "titles":
+            results = await searchMovieTitles(searchTermTrimmed);
+            console.log(results);
+            break;
+          case "database":
+            results = userId
+              ? await searchDatabaseForUser(searchTermTrimmed, userId)
+              : await searchDatabaseTitles(searchTermTrimmed);
+            break;
+          case "persons":
+            results = await searchPersons(searchTermTrimmed);
+            break;
+          default:
+            results = await searchMovieTitles(searchTermTrimmed);
+        }
+        
+        console.log('Search results:', results);
+        
+        if (Array.isArray(results)) {
+          setMovies(results);
+        } else {
+          console.error('Unexpected results format:', results);
+          setMovies([]);
+        }
+      } catch (err) {
+        console.error('Search error:', err);
+        setError(err.message || 'An error occurred while searching');
         setMovies([]);
+      } finally {
+        const endTime = performance.now();
+        const duration = (endTime - startTime).toFixed(2);
+        setSearchDuration(duration);
+        setLoading(false);
       }
-    } catch (err) {
-      console.error('Search error:', err);
-      setError(err.message || 'An error occurred while searching');
-      setMovies([]);
-    } finally {
-      const endTime = performance.now();
-      const duration = (endTime - startTime).toFixed(2);
-      setSearchDuration(duration);
-      setLoading(false);
-    }
-  }, [searchTerm, searchType, userId]);
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (searchTerm) {
-      window.history.pushState(
-        {}, 
-        '', 
-        `/search?q=${encodeURIComponent(searchTerm)}&type=${searchType}`
-      );
+    };
+    if (searchTerm.trim()) { // Only perform search if searchTerm is not empty
       performSearch();
     }
-  };
+
+  },[searchTerm, searchType]);
+  
+  
 
   return (
     <Container className="mt-4">
-      <Form onSubmit={handleSearch} className="mb-4">
-        <Row className="align-items-end">
-          <Col md={6}>
-            <Form.Group>
-              <Form.Label>
-                Search Movies 
-                {searchDuration && !loading && (
-                  <small className="text-muted ms-2">
-                    (Last search: {searchDuration}ms)
-                  </small>
-                )}
-              </Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Enter search term"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </Form.Group>
-          </Col>
-          <Col md={4}>
-            <ButtonGroup>
-              <Button
-                variant={searchType === "titles" ? "primary" : "outline-primary"}
-                onClick={() => setSearchType("titles")}
-              >
-                Titles
-              </Button>
-              <Button
-                variant={searchType === "database" ? "primary" : "outline-primary"}
-                onClick={() => setSearchType("database")}
-              >
-                Database
-              </Button>
-              <Button
-                variant={searchType === "persons" ? "primary" : "outline-primary"}
-                onClick={() => setSearchType("persons")}
-              >
-                Persons
-              </Button>
-              <Button
-                variant={searchType === "all" ? "primary" : "outline-primary"}
-                onClick={() => setSearchType("all")}
-              >
-                All
-              </Button>
-            </ButtonGroup>
-          </Col>
-          <Col md={2}>
-            <Button type="submit" className="w-100" disabled={loading}>
-              {loading ? (
-                <Spinner animation="border" size="sm" role="status">
-                  <span className="visually-hidden">Loading...</span>
-                </Spinner>
-              ) : (
-                "Search"
-              )}
-            </Button>
-          </Col>
-        </Row>
-      </Form>
-
       {error && (
         <div className="alert alert-danger" role="alert">
           {error}
