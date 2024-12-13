@@ -1,19 +1,20 @@
-import React, { useState, useEffect, useContext, useCallback } from "react";
-import { 
-  searchAllMovies, 
-  searchMovieTitles, 
-  searchDatabaseTitles, 
+import React, { useState, useEffect, useContext } from "react";
+import {
+  searchAllMovies,
+  searchMovieTitles,
+  searchDatabaseTitles,
   searchPersons,
   searchMoviesForUser,
-  searchDatabaseForUser 
+  searchDatabaseForUser,
 } from "../services/MovieService";
 import MovieCard from "../components/MovieCard";
-import { Container, Row, Col, Form, Button, ButtonGroup, Spinner } from "react-bootstrap";
-import { useLocation } from "react-router-dom";
+import { Container, Row, Col, Form, Spinner } from "react-bootstrap";
+import { useLocation, Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import Footer from "../components/Footer";
 
 function lowercaseFirstLetter(str) {
-  if (str.length === 0) return str; // Handle empty strings
+  if (str.length === 0) return str;
   return str.charAt(0).toLowerCase() + str.slice(1);
 }
 
@@ -26,39 +27,37 @@ function SearchResults() {
   const searchTerm = query.get("q") || "";
   const searchType = lowercaseFirstLetter(query.get("type")) || "titles";
   const [movies, setMovies] = useState([]);
-  //const [searchTerm, setSearchTerm] = useState(searchQuery);
-  //const [searchType, setSearchType] = useState(searchTypeFromNev);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchDuration, setSearchDuration] = useState(null);
-  
+  const [sortBy, setSortBy] = useState("relevance");
+
   const { authTokens } = useContext(AuthContext);
   const userId = authTokens?.userId;
-  
+
+  useEffect(() => {
+    // Dynamically import Bootstrap's JavaScript
+    import('bootstrap/dist/js/bootstrap.bundle.min.js');
+  }, []);
+
   useEffect(() => {
     const performSearch = async () => {
       if (!searchTerm || !searchType) return;
-      
+
       setLoading(true);
       setError(null);
       const startTime = performance.now();
-      //searchType=lowercaseFirstLetter(searchType);
-      console.log('searchTerm:', searchTerm);
-      console.log('searchType:', searchType);
-      
+
       try {
         let results;
         const searchTermTrimmed = searchTerm.trim();
-        
-        console.log('Performing search with:', { searchTermTrimmed, searchType });
-        
+
         switch (searchType) {
           case "all":
             results = await searchAllMovies(searchTermTrimmed);
             break;
           case "titles":
             results = await searchMovieTitles(searchTermTrimmed);
-            console.log(results);
             break;
           case "database":
             results = userId
@@ -71,13 +70,10 @@ function SearchResults() {
           default:
             results = await searchMovieTitles(searchTermTrimmed);
         }
-        
-        console.log('Search results:', results);
-        
+
         if (Array.isArray(results)) {
           setMovies(results);
         } else {
-          console.error('Unexpected results format:', results);
           setMovies([]);
         }
       } catch (err) {
@@ -91,52 +87,68 @@ function SearchResults() {
         setLoading(false);
       }
     };
-    if (searchTerm.trim()) { // Only perform search if searchTerm is not empty
+
+    if (searchTerm.trim()) {
       performSearch();
     }
-
-  },[searchTerm, searchType]);
-  
-  
+  }, [searchTerm, searchType, userId]);
 
   return (
-    <Container className="mt-4">
-      {error && (
-        <div className="alert alert-danger" role="alert">
-          {error}
-        </div>
-      )}
-
-      {loading ? (
-        <div className="text-center my-5">
-          <Spinner animation="border" role="status">
-            <span className="visually-hidden">Loading...</span>
-          </Spinner>
-        </div>
-      ) : (
-        <>
-          <div className="mb-3">
-            {searchTerm && (
-              <p>Found {movies.length} results for "{searchTerm}"</p>
+    <div className="min-vh-100 bg-dark">
+      <Container className="py-4">
+        <Row className="mb-4">
+          <Col>
+            <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+              <h2 className="text-white mb-3 mb-md-0">
+                Search Results for "{searchTerm}"
+              </h2>
+            </div>
+            {searchDuration && (
+              <p className="text-muted mb-0">
+                Found {movies.length} results in {searchDuration}ms
+              </p>
             )}
-          </div>
-          
-          <Row>
-            {movies.map((movie) => (
-              <Col key={movie.id} xs={12} md={6} lg={4}>
-                <MovieCard movie={movie} />
-              </Col>
-            ))}
-          </Row>
-        </>
-      )}
+          </Col>
+        </Row>
 
-      {!loading && movies.length === 0 && searchTerm && (
-        <div className="text-center mt-4">
-          <p>No results found for "{searchTerm}"</p>
-        </div>
-      )}
-    </Container>
+        {error && (
+          <div className="alert alert-danger bg-danger bg-opacity-25 text-white border-danger" role="alert">
+            {error}
+          </div>
+        )}
+
+        {loading ? (
+          <div className="text-center my-5">
+            <Spinner animation="border" role="status" variant="light">
+              <span className="visually-hidden">Loading...</span>
+            </Spinner>
+          </div>
+        ) : (
+          <div className="container">
+            <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 g-4">
+              {movies.map((movie) => (
+                <div className="col" key={movie.id || movie.tconst}>
+                  <MovieCard movie={movie} />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {!loading && movies.length === 0 && searchTerm && (
+          <div className="text-center text-white py-5">
+            <div className="bg-black bg-opacity-50 rounded p-4">
+              <h3 className="mb-3">No results found for "{searchTerm}"</h3>
+              <p className="text-muted mb-0">
+                Try adjusting your search terms or browse our trending movies
+              </p>
+            </div>
+          </div>
+        )}
+      </Container>
+
+      <Footer />
+    </div>
   );
 }
 

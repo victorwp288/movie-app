@@ -5,6 +5,10 @@ export function WordCloud({ words, width, height }) {
   const [hoveredWord, setHoveredWord] = useState(null);
   const cloudWords = useWordCloud(words, width, height);
 
+  if (!words || words.length === 0) {
+    return <div>No words available for cloud visualization</div>;
+  }
+
   return (
     <div className="relative">
       <svg width={width} height={height}>
@@ -15,8 +19,8 @@ export function WordCloud({ words, width, height }) {
               style={{
                 fill: hoveredWord === word.text ? "#ff6b6b" : "#4a4a4a",
                 fontSize: word.size,
-                fontFamily: word.font,
-                fontWeight: word.weight,
+                fontFamily: "Arial",
+                fontWeight: word.size > 40 ? "bold" : "normal",
                 textAnchor: "middle",
                 cursor: "pointer",
                 transition: "fill 0.3s ease",
