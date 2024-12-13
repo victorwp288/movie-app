@@ -12,7 +12,7 @@ function AppNavbar() {
   const { authTokens, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchType, setSearchType] = useState("all");
+  const [searchType, setSearchType] = useState("All");
 
   const handleLogout = () => {
     logout();

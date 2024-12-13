@@ -1,10 +1,14 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { Container, Card, ListGroup, Button, Row, Col, Spinner, Badge } from 'react-bootstrap';
+import { Container, Card, ListGroup, Button, Row, Col, Spinner, Badge, Alert } from 'react-bootstrap';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { getUserBookmarks, getUserRatingsWithMovies } from '../services/MovieService';
 import MovieCard from '../components/MovieCard';
 import { FaStar } from 'react-icons/fa';
+import PasswordModal from '../components/PasswordModal';
+import { removeUser } from '../services/MovieService';
+import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
+
 
 function Profile() {
   const { authTokens, logout } = useContext(AuthContext);
@@ -13,6 +17,8 @@ function Profile() {
   const [ratings, setRatings] = useState([]);
   const [ratingsLoading, setRatingsLoading] = useState(true);
   const navigate = useNavigate();
+  const [showAlertPasCh, setShowAlertPasCh] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     const fetchUserDetails = async () => {
@@ -69,6 +75,45 @@ function Profile() {
     navigate('/', { replace: true });
   };
 
+  const [showModal, setShowModal] = useState(false);
+      
+  const handlePasswordChange = (newPassword) => {
+      console.log('New Password:', newPassword);
+      // Here, you would typically send the new password to an API endpoint.
+      // For this example, we'll simulate a successful password change and show the alert
+      setShowAlertPasCh(true);
+
+      // After 3 seconds, hide the alert
+      setTimeout(() => {
+          setShowAlertPasCh(false);
+      }, 3000);
+  };
+
+  const handleChangePassword = () => {
+      setShowModal(true);
+  };
+  
+
+  const handleDeleteUser = async () => {
+    setShowDeleteModal(true);
+};
+
+const handleConfirmDelete = async () => {
+try {
+  await removeUser(authTokens.userId);
+  logout();
+  navigate('/', { replace: true });
+  setShowDeleteModal(false);
+} catch (error) {
+    console.error('Error deleting user:', error);
+      setShowDeleteModal(false);
+}
+};
+
+const handleCancelDelete = () => {
+setShowDeleteModal(false);
+};
+
   const handleBookmarkRemove = async (movieId) => {
     setBookmarks(prev => prev.filter(movie => movie.tconst !== movieId));
   };
@@ -117,9 +162,35 @@ function Profile() {
               </ListGroup>
             </Card.Body>
             <Card.Footer>
-              <Button variant="danger" onClick={handleLogout}>
-                Logout
-              </Button>
+              <div className="d-flex justify-content-between align-items-center">
+                <Button variant="danger" onClick={handleLogout}>
+                  Logout
+                </Button>
+              
+                {showAlertPasCh && (
+                  <Alert variant="success" onClose={() => setShowAlertPasCh(false)} dismissible>
+                      Password successfully changed!
+                  </Alert>
+                )}
+                <Button variant="warning" onClick={handleChangePassword}>
+                  Change Password
+                </Button>
+                <PasswordModal
+                  isOpen={showModal}
+                  onClose={() => setShowModal(false)}
+                  onSubmit={handlePasswordChange}
+                  userDet={userDetails}
+                />
+              
+                <Button variant="danger" onClick={handleDeleteUser}>
+                  Remove Account
+                </Button>
+                <DeleteConfirmationModal
+                  isOpen={showDeleteModal}
+                  onClose={handleCancelDelete}
+                  onConfirm={handleConfirmDelete}
+                />
+              </div>
             </Card.Footer>
           </>
         ) : (

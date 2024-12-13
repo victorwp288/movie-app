@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Container, Form, Button, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import { passwordSchema } from "../services/SecurityService";
+
 
 function SignUp() {
   const [formData, setFormData] = useState({
@@ -34,6 +36,7 @@ function SignUp() {
     }
 
     try {
+      await passwordSchema.parseAsync(formData.password);
       const response = await fetch(`${process.env.REACT_APP_API_URL}/users/register`, {
         method: 'POST',
         headers: {

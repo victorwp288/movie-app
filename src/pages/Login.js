@@ -4,7 +4,6 @@ import { Form, Button, Container, Alert } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { passwordSchema } from "../services/SecurityService";
-
 function Login() {
   const [formData, setFormData] = useState({
     username: "",

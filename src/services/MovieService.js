@@ -1,5 +1,6 @@
 const API_URL = process.env.REACT_APP_API_URL;
 
+
 export const getPopularMovies = async (page = 0, pageSize = 5) => {
   try {
     const url = `${API_URL}/movies?page=${page}&pageSize=${pageSize}`;
@@ -335,3 +336,22 @@ export const getUserRatingsWithMovies = async (userId) => {
     throw error;
   }
 };
+
+export const removeUser = async (userId) => {
+  console.log('Removing bookmark:', `${API_URL}/users/${userId}/delete`);
+  try {
+    const response = await fetch(`${API_URL}/users/${userId}/delete`, {
+      method: 'DELETE'
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to remove user');
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error removing user:', error);
+    throw error;
+  }
+};
+
