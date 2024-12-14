@@ -19,6 +19,9 @@ import {
 import Footer from "../components/Footer";
 import MovieCard from "../components/MovieCard";
 import { FaStar } from "react-icons/fa";
+import { removeUser } from "../services/MovieService";
+import PasswordModal from "../components/PasswordModal";
+import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 
 function Profile() {
   const { authTokens, logout } = useContext(AuthContext);
