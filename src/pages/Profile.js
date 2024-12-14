@@ -270,7 +270,7 @@ setShowDeleteModal(false);
                         <div className="d-flex justify-content-between align-items-center">
                           <h6 className="mb-0">
                             <Link 
-                              to={`/movie/${movie.tconst}`}
+                              to={`/movie/${movie.tConst}`}
                               className="text-decoration-none text-white"
                             >
                               {movie.primaryTitle || movie.title}
