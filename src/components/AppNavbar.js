@@ -1,5 +1,5 @@
 import React, { useContext, useState } from "react";
-import { Navbar, Nav, Container, NavDropdown, Form, Button } from "react-bootstrap";
+import { Navbar, Nav, Container, Form, Button } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -12,7 +12,7 @@ function AppNavbar() {
   const { authTokens, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchType, setSearchType] = useState("All");
+  const [searchType, setSearchType] = useState("Titles");
 
   const handleLogout = () => {
     logout();
@@ -24,7 +24,6 @@ function AppNavbar() {
     e.preventDefault();
     if (searchTerm.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchTerm.trim())}&type=${encodeURIComponent(searchType)}`);
-      //setSearchTerm("");
     }
   };
 
@@ -47,10 +46,8 @@ function AppNavbar() {
                   borderRadius: '4px 0 0 4px'
                 }}
               >
-                <Dropdown.Item onClick={() => setSearchType("All")}>All</Dropdown.Item>
                 <Dropdown.Item onClick={() => setSearchType("Titles")}>Titles</Dropdown.Item>
                 <Dropdown.Item onClick={() => setSearchType("Persons")}>Persons</Dropdown.Item>
-                <Dropdown.Item onClick={() => setSearchType("Database")}>Database</Dropdown.Item>
               </DropdownButton>
               <Form.Control
                 type="search"

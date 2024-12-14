@@ -25,7 +25,6 @@ import {
 import { AuthContext } from "../context/AuthContext";
 import { FaStar, FaRegStar, FaBookmark } from "react-icons/fa";
 import { getImage } from "../services/TMDBService";
-import { set } from "zod";
 import { WordCloud } from "../components/WordCloud";
 
 function MovieDetails() {

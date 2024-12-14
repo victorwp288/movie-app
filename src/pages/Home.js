@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import MovieCard from "../components/MovieCard";
 import { getPopularMovies } from "../services/MovieService";
-import { Container, Row, Col, Button, Form } from "react-bootstrap";
+import { Container, Button, Form } from "react-bootstrap";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../App.css';
 import Footer from "../components/Footer";
@@ -81,7 +81,12 @@ function Home() {
                   A compelling description of the featured movie that captures attention and
                   drives interest in watching it.
                 </p>
-                <button className="btn btn-warning btn-lg px-4">Watch Now</button>
+                <button 
+                  onClick={() => window.open('https://www.imdb.com', '_blank')} 
+                  className="btn btn-warning btn-lg px-4"
+                >
+                  Watch Now
+                </button>
               </div>
             </div>
           </div>

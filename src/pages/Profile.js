@@ -2,13 +2,12 @@ import React, { useContext, useState, useEffect } from "react";
 import {
   Container,
   Card,
-  ListGroup,
   Button,
   Row,
   Col,
   Spinner,
   Badge,
-  Alert 
+  Alert,
 } from "react-bootstrap";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
@@ -17,8 +16,6 @@ import {
   getUserRatingsWithMovies,
 } from "../services/MovieService";
 import Footer from "../components/Footer";
-import MovieCard from "../components/MovieCard";
-import { FaStar } from "react-icons/fa";
 import { removeUser } from "../services/MovieService";
 import PasswordModal from "../components/PasswordModal";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
@@ -37,9 +34,9 @@ function Profile() {
     if (!authTokens?.userId) return;
 
     try {
-      console.log('Fetching bookmarks for user:', authTokens.userId);
+      console.log("Fetching bookmarks for user:", authTokens.userId);
       const bookmarkedMovies = await getUserBookmarks(authTokens.userId);
-      console.log('Received bookmarks:', bookmarkedMovies);
+      console.log("Received bookmarks:", bookmarkedMovies);
       setBookmarks(bookmarkedMovies);
     } catch (error) {
       console.error("Error fetching bookmarks:", error);
@@ -94,43 +91,42 @@ function Profile() {
   };
 
   const [showModal, setShowModal] = useState(false);
-      
-  const handlePasswordChange = (newPassword) => {
-      console.log('New Password:', newPassword);
-      // Here, you would typically send the new password to an API endpoint.
-      // For this example, we'll simulate a successful password change and show the alert
-      setShowAlertPasCh(true);
 
-      // After 3 seconds, hide the alert
-      setTimeout(() => {
-          setShowAlertPasCh(false);
-      }, 3000);
+  const handlePasswordChange = (newPassword) => {
+    console.log("New Password:", newPassword);
+    // Here, you would typically send the new password to an API endpoint.
+    // For this example, we'll simulate a successful password change and show the alert
+    setShowAlertPasCh(true);
+
+    // After 3 seconds, hide the alert
+    setTimeout(() => {
+      setShowAlertPasCh(false);
+    }, 3000);
   };
 
   const handleChangePassword = () => {
-      setShowModal(true);
+    setShowModal(true);
   };
-  
 
   const handleDeleteUser = async () => {
     setShowDeleteModal(true);
-};
+  };
 
-const handleConfirmDelete = async () => {
-try {
-  await removeUser(authTokens.userId);
-  logout();
-  navigate('/', { replace: true });
-  setShowDeleteModal(false);
-} catch (error) {
-    console.error('Error deleting user:', error);
+  const handleConfirmDelete = async () => {
+    try {
+      await removeUser(authTokens.userId);
+      logout();
+      navigate("/", { replace: true });
       setShowDeleteModal(false);
-}
-};
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      setShowDeleteModal(false);
+    }
+  };
 
-const handleCancelDelete = () => {
-setShowDeleteModal(false);
-};
+  const handleCancelDelete = () => {
+    setShowDeleteModal(false);
+  };
 
   const handleBookmarkRemove = async (movieId) => {
     setBookmarks((prev) => prev.filter((movie) => movie.tconst !== movieId));
@@ -174,36 +170,58 @@ setShowDeleteModal(false);
                   {userDetails?.username || "Loading..."}
                 </h3>
                 <p>{userDetails?.email || ""}</p>
-                
-                <div className="d-flex justify-content-between align-items-center">
-                  <Button variant="danger" className="mt-3" onClick={handleLogout}>
+
+                <div className="d-flex justify-content-between align-items-center gap-2">
+                  <Button
+                    variant="danger"
+                    className="mt-3 flex-fill"
+                    style={{ height: "60px" }}
+                    onClick={handleLogout}
+                  >
                     Logout
                   </Button>
-              
-                  {showAlertPasCh && (
-                    <Alert variant="success" onClose={() => setShowAlertPasCh(false)} dismissible>
-                        Password successfully changed!
-                    </Alert>
-                  )}
-                  <Button variant="warning" className="mt-3" onClick={handleChangePassword}>
+
+                  <Button
+                    variant="warning"
+                    className="mt-3 flex-fill"
+                    style={{ height: "60px" }}
+                    onClick={handleChangePassword}
+                  >
                     Change Password
                   </Button>
-                  <PasswordModal
-                    isOpen={showModal}
-                    onClose={() => setShowModal(false)}
-                    onSubmit={handlePasswordChange}
-                    userDet={userDetails}
-                  />
-                
-                  <Button variant="danger" className="mt-3" onClick={handleDeleteUser}>
+
+                  <Button
+                    variant="danger"
+                    className="mt-3 flex-fill"
+                    style={{ height: "60px" }}
+                    onClick={handleDeleteUser}
+                  >
                     Remove Account
                   </Button>
-                  <DeleteConfirmationModal
-                    isOpen={showDeleteModal}
-                    onClose={handleCancelDelete}
-                    onConfirm={handleConfirmDelete}
-                  />
                 </div>
+
+                {showAlertPasCh && (
+                  <Alert
+                    variant="success"
+                    onClose={() => setShowAlertPasCh(false)}
+                    dismissible
+                  >
+                    Password successfully changed!
+                  </Alert>
+                )}
+
+                <PasswordModal
+                  isOpen={showModal}
+                  onClose={() => setShowModal(false)}
+                  onSubmit={handlePasswordChange}
+                  userDet={userDetails}
+                />
+
+                <DeleteConfirmationModal
+                  isOpen={showDeleteModal}
+                  onClose={handleCancelDelete}
+                  onConfirm={handleConfirmDelete}
+                />
               </Card.Body>
             </Card>
           </Col>
@@ -269,7 +287,7 @@ setShowDeleteModal(false);
                       >
                         <div className="d-flex justify-content-between align-items-center">
                           <h6 className="mb-0">
-                            <Link 
+                            <Link
                               to={`/movie/${movie.tConst}`}
                               className="text-decoration-none text-white"
                             >
@@ -277,9 +295,11 @@ setShowDeleteModal(false);
                             </Link>
                           </h6>
                           <div>
-                            <span className="me-2">{movie.startYear || movie.year}</span>
+                            <span className="me-2">
+                              {movie.startYear || movie.year}
+                            </span>
                             {movie.averageRating && (
-                              <Badge bg="warning" text="dark">
+                              <Badge bg="white" text="dark">
                                 ⭐ {movie.averageRating}
                               </Badge>
                             )}

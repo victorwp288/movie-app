@@ -1,7 +1,6 @@
-import React, { useState,useContext } from 'react';
-import { Modal, Form, Button } from 'react-bootstrap';
-import { passwordSchema } from "../services/SecurityService";
-import { AuthContext } from '../context/AuthContext';
+import React from 'react';
+import { Modal, Button } from 'react-bootstrap';
+
 
 const DeleteConfirmationModal = ({ isOpen, onClose, onConfirm }) => {
     return (

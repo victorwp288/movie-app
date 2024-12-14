@@ -4,12 +4,11 @@ import {
   searchMovieTitles,
   searchDatabaseTitles,
   searchPersons,
-  searchMoviesForUser,
   searchDatabaseForUser,
 } from "../services/MovieService";
 import MovieCard from "../components/MovieCard";
-import { Container, Row, Col, Form, Spinner } from "react-bootstrap";
-import { useLocation, Link } from "react-router-dom";
+import { Container, Row, Col, Spinner } from "react-bootstrap";
+import { useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import Footer from "../components/Footer";
 

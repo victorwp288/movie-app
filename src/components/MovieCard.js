@@ -9,7 +9,6 @@ import {
   getUserBookmarks,
 } from "../services/MovieService";
 import { getImage } from "../services/TMDBService";
-import { set } from "zod";
 
 function MovieCard({ movie, isBookmarked = false, onBookmarkChange }) {
   console.log("MovieCard component rendered with movie:", movie);
