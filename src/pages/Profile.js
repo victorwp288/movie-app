@@ -1,13 +1,14 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { Container, Card, ListGroup, Button, Row, Col, Spinner, Badge, Alert } from 'react-bootstrap';
 import { AuthContext } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate,Link } from 'react-router-dom';
 import { getUserBookmarks, getUserRatingsWithMovies } from '../services/MovieService';
 import MovieCard from '../components/MovieCard';
 import { FaStar } from 'react-icons/fa';
 import PasswordModal from '../components/PasswordModal';
 import { removeUser } from '../services/MovieService';
 import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
+import Footer from "../components/Footer";
 
 
 function Profile() {
@@ -143,27 +144,35 @@ setShowDeleteModal(false);
       window.removeEventListener('focus', handleFocus);
     };
   }, [authTokens]);
-
   return (
-    <Container className="mt-4">
-      {/* User Profile Card */}
-      <Card style={{ maxWidth: '600px' }} className="mx-auto mb-4">
-        <Card.Header as="h4">Profile</Card.Header>
-        {userDetails ? (
-          <>
-            <Card.Body>
-              <ListGroup variant="flush">
-                <ListGroup.Item>
-                  <strong>Username:</strong> {userDetails.username}
-                </ListGroup.Item>
-                <ListGroup.Item>
-                  <strong>Email:</strong> {userDetails.email}
-                </ListGroup.Item>
-              </ListGroup>
-            </Card.Body>
-            <Card.Footer>
-              <div className="d-flex justify-content-between align-items-center">
-                <Button variant="danger" onClick={handleLogout}>
+    <div className="min-vh-100 bg-dark">
+      {/* Profile Content */}
+      <Container className="py-5">
+        <Row>
+          <Col xs={12} md={4} className="mb-4">
+            {/* Profile Card */}
+            <Card className="bg-black text-white border-0">
+              <Card.Body className="text-center">
+                <div className="mb-4">
+                  <img
+                    src="https://picsum.photos/200"
+                    alt="Profile"
+                    className="rounded-circle"
+                    style={{
+                      width: "150px",
+                      height: "150px",
+                      objectFit: "cover",
+                    }}
+                  />
+                </div>
+                <h3 className="card-title">
+                  {userDetails?.username || "Loading..."}
+                </h3>
+                <p>{userDetails?.email || ""}</p>
+                
+                  
+                <div className="d-flex justify-content-between align-items-center">
+                <Button variant="danger" className="mt-3" onClick={handleLogout}>
                   Logout
                 </Button>
               
@@ -172,7 +181,7 @@ setShowDeleteModal(false);
                       Password successfully changed!
                   </Alert>
                 )}
-                <Button variant="warning" onClick={handleChangePassword}>
+                <Button variant="warning" className="mt-3" onClick={handleChangePassword}>
                   Change Password
                 </Button>
                 <PasswordModal
@@ -182,7 +191,7 @@ setShowDeleteModal(false);
                   userDet={userDetails}
                 />
               
-                <Button variant="danger" onClick={handleDeleteUser}>
+                <Button variant="danger" className="mt-3" onClick={handleDeleteUser}>
                   Remove Account
                 </Button>
                 <DeleteConfirmationModal
@@ -191,90 +200,101 @@ setShowDeleteModal(false);
                   onConfirm={handleConfirmDelete}
                 />
               </div>
-            </Card.Footer>
-          </>
-        ) : (
-          <Card.Body>Loading...</Card.Body>
-        )}
-      </Card>
+              </Card.Body>
+            </Card>
+          </Col>
 
-      {/* Ratings Section */}
-      <Card className="mt-4">
-        <Card.Header as="h4">My Ratings</Card.Header>
-        <Card.Body>
-          {ratingsLoading ? (
-            <div className="text-center">
-              <Spinner animation="border" />
-            </div>
-          ) : ratings.length === 0 ? (
-            <p className="text-center">You haven't rated any movies yet.</p>
-          ) : (
-            <Row>
-              {ratings.map((rating) => (
-                <Col key={rating.tConst} xs={12} md={6} lg={4}>
-                  <Card className="mb-3">
-                    <Card.Body>
-                      <Card.Title>
-                        <a href={`/movie/${rating.tConst}`} className="text-decoration-none text-dark">
-                          {rating.movieTitle}
-                        </a>
-                      </Card.Title>
-                      <div className="d-flex align-items-center mb-2">
-                        <div className="me-2">
-                          {Array.from({ length: 10 }).map((_, index) => (
-                            <FaStar
-                              key={index}
-                              size={12}
-                              color={index < rating.rating ? "#ffc107" : "#e4e5e9"}
-                            />
-                          ))}
+          <Col xs={12} md={8}>
+            {/* Ratings Section */}
+            <Card className="bg-black text-white border-0 mb-4">
+              <Card.Body>
+                <h4 className="card-title mb-4" style={{ color: "#F5C518" }}>
+                  My Ratings
+                </h4>
+                {ratingsLoading ? (
+                  <div className="text-center">
+                    <Spinner animation="border" />
+                  </div>
+                ) : ratings.length === 0 ? (
+                  <p className="text-center">
+                    You haven't rated any movies yet.
+                  </p>
+                ) : (
+                  <div className="list-group list-group-flush">
+                    {ratings.map((rating) => (
+                      <div
+                        key={rating.tConst}
+                        className="list-group-item bg-black text-white border-bottom border-secondary"
+                      >
+                        <div className="d-flex justify-content-between align-items-center">
+                          <h6 className="mb-0">
+                            <a
+                              href={`/movie/${rating.tConst}`}
+                              className="text-decoration-none text-white"
+                            >
+                              {rating.movieTitle}
+                            </a>
+                          </h6>
+                          <span className="text-warning">
+                            ⭐ {rating.rating}/10
+                          </span>
                         </div>
-                        <Badge bg="secondary">{rating.rating}/10</Badge>
                       </div>
-                      {rating.review && (
-                        <Card.Text className="text-muted">
-                          "{rating.review}"
-                        </Card.Text>
-                      )}
-                      <small className="text-muted">
-                        Rated on: {new Date(rating.reviewDate).toLocaleDateString()}
-                      </small>
-                    </Card.Body>
-                  </Card>
-                </Col>
-              ))}
-            </Row>
-          )}
-        </Card.Body>
-      </Card>
+                    ))}
+                  </div>
+                )}
+              </Card.Body>
+            </Card>
 
-      {/* Bookmarks Section */}
-      <Card className="mt-4">
-        <Card.Header as="h4">My Bookmarks</Card.Header>
-        <Card.Body>
-          {bookmarks.length === 0 ? (
-            <p className="text-center">You haven't bookmarked any movies yet.</p>
-          ) : (
-            <Row>
-              {bookmarks.map((movie) => (
-                <Col key={movie.tconst} xs={12} md={6} lg={4}>
-                  <MovieCard 
-                    movie={movie}
-                    isBookmarked={true}
-                    onBookmarkChange={(id, isBookmarked) => {
-                      if (!isBookmarked) {
-                        handleBookmarkRemove(id);
-                      }
-                    }}
-                  />
-                </Col>
-              ))}
-            </Row>
-          )}
-        </Card.Body>
-      </Card>
-    </Container>
+            {/* Bookmarks Section */}
+            <Card className="bg-black text-white border-0">
+              <Card.Body>
+                <h4 className="card-title mb-4" style={{ color: "#F5C518" }}>
+                  My Bookmarks
+                </h4>
+                {bookmarks.length === 0 ? (
+                  <p className="text-center">
+                    You haven't bookmarked any movies yet.
+                  </p>
+                ) : (
+                  <div className="list-group list-group-flush">
+                    {bookmarks.map((movie) => (
+                      <div
+                        key={movie.tconst}
+                        className="list-group-item bg-black text-white border-bottom border-secondary"
+                      >
+                        <div className="d-flex justify-content-between align-items-center">
+                          <h6 className="mb-0">
+                            <Link 
+                              to={`/movie/${movie.tconst}`}
+                              className="text-decoration-none text-white"
+                            >
+                              {movie.primaryTitle || movie.title}
+                            </Link>
+                          </h6>
+                          <div>
+                            <span className="me-2">{movie.startYear || movie.year}</span>
+                            {movie.averageRating && (
+                              <Badge bg="warning" text="dark">
+                                ⭐ {movie.averageRating}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
+
+      {/* Footer */}
+      <Footer />
+    </div>
   );
 }
-
-export default Profile; 
+export default Profile;
+  
