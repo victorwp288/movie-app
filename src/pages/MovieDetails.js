@@ -1,10 +1,30 @@
 import React, { useState, useEffect, useContext } from "react";
-import { useParams,useLocation } from "react-router-dom";
-import { getMovieDetails, addBookmark, rateMovie, getUserBookmarks, removeBookmark, getUserRating } from "../services/MovieService";
-import { Container, Button, Card, Row, Col, Badge, Spinner, Form } from "react-bootstrap";
+import { useParams, useLocation } from "react-router-dom";
+import {
+  getMovieDetails,
+  addBookmark,
+  rateMovie,
+  getUserBookmarks,
+  removeBookmark,
+  getUserRating,
+  getMovieReviewWords,
+  getMovieGenreWords,
+  getMovieCastWords,
+  getRelatedMovieWords,
+} from "../services/MovieService";
+import {
+  Container,
+  Button,
+  Card,
+  Row,
+  Col,
+  Badge,
+  Spinner,
+  Form,
+} from "react-bootstrap";
 import { AuthContext } from "../context/AuthContext";
-import { FaStar, FaRegStar, FaBookmark } from 'react-icons/fa';
-import {getImage} from "../services/TMDBService";
+import { FaStar, FaRegStar, FaBookmark } from "react-icons/fa";
+import { getImage } from "../services/TMDBService";
 import { set } from "zod";
 import { WordCloud } from "../components/WordCloud";
 
@@ -21,22 +41,16 @@ function MovieDetails() {
   const [imageUrl, setImageUrl] = useState(null);
   const [type, setType] = useState(null);
   const [overView, setOverView] = useState(null);
+  const [reviewWords, setReviewWords] = useState([]);
+  const [genreWords, setGenreWords] = useState([]);
+  const [castWords, setCastWords] = useState([]);
+  const [relatedWords, setRelatedWords] = useState([]);
+  const [cloudWords, setCloudWords] = useState([]);
 
   const { authTokens } = useContext(AuthContext);
   const userId = authTokens ? authTokens.userId : null;
-  const location = useLocation() ;
-  console.log('location.state in MovieListPage:', location.state);
-    
-
-	const words = [
-		{text: 'React', size: 60},
-		{text: 'JavaScript', size: 55},
-		{text: 'Node.js', size: 50},
-		{text: 'Express', size: 45},
-		{text: 'MongoDB', size: 40},
-		{text: 'HTML', size: 35},
-		{text: 'CSS', size: 30},
-	]
+  const location = useLocation();
+  console.log("location.state in MovieListPage:", location.state);
 
   useEffect(() => {
     const fetchImage = async () => {
@@ -44,9 +58,9 @@ function MovieDetails() {
       setImageUrl(imageDataNType.imageUrl);
       setType(imageDataNType.type);
       setOverView(imageDataNType.overView);
-      console.log('imageUrl:', imageUrl);
-      console.log('type:', type);
-    }
+      console.log("imageUrl:", imageUrl);
+      console.log("type:", type);
+    };
     const fetchMovieDetails = async () => {
       try {
         setLoading(true);
@@ -101,6 +115,91 @@ function MovieDetails() {
     checkBookmarkStatus();
     fetchUserRating();
   }, [userId, movie]);
+
+  useEffect(() => {
+    const fetchReviewWords = async () => {
+      if (movie?.tConst) {
+        const words = await getMovieReviewWords(movie.tConst);
+        setReviewWords(words);
+      }
+    };
+
+    fetchReviewWords();
+  }, [movie]);
+
+  useEffect(() => {
+    const fetchWordCloudData = async () => {
+      if (movie?.tConst) {
+        // Fetch all word cloud data in parallel
+        const [genres, cast, related] = await Promise.all([
+          getMovieGenreWords(movie.tConst),
+          getMovieCastWords(movie.tConst),
+          getRelatedMovieWords(movie.tConst),
+        ]);
+
+        setGenreWords(genres);
+        setCastWords(cast);
+        setRelatedWords(related);
+      }
+    };
+
+    fetchWordCloudData();
+  }, [movie]);
+
+  useEffect(() => {
+    if (movie) {
+      // Combine all text data
+      const allWords = [
+        // Add genres (higher weight since they're important)
+        ...(movie.genres?.map((genre) => ({ text: genre, size: 55 })) || []),
+
+        // Add words from overview/description (medium weight)
+        ...(overView
+          ?.split(/\s+/)
+          .filter((word) => word.length > 3) // Filter out small words
+          .map((word) => ({ text: word, size: 40 })) || []),
+
+        // Add title words (high weight for visibility)
+        ...movie.primaryTitle.split(/\s+/).map((word) => ({
+          text: word,
+          size: 60,
+        })),
+
+        // Add review if it exists (medium weight)
+        ...(review
+          ?.split(/\s+/)
+          .filter((word) => word.length > 3)
+          .map((word) => ({ text: word, size: 45 })) || []),
+      ];
+
+      // Combine duplicate words and average their sizes
+      const wordMap = new Map();
+      allWords.forEach(({ text, size }) => {
+        const word = text.toLowerCase().replace(/[^a-z0-9]/g, "");
+        if (word) {
+          if (wordMap.has(word)) {
+            const existing = wordMap.get(word);
+            wordMap.set(word, {
+              count: existing.count + 1,
+              totalSize: existing.totalSize + size,
+            });
+          } else {
+            wordMap.set(word, { count: 1, totalSize: size });
+          }
+        }
+      });
+
+      // Convert back to array format with averaged sizes
+      const combinedWords = Array.from(wordMap.entries()).map(
+        ([word, data]) => ({
+          text: word,
+          size: data.totalSize / data.count,
+        })
+      );
+
+      setCloudWords(combinedWords);
+    }
+  }, [movie, overView, review]);
 
   const handleBookmark = async () => {
     if (!userId) {
@@ -178,7 +277,7 @@ function MovieDetails() {
       </Container>
     );
   }
-console.log('imgUrl:', imageUrl);
+  console.log("imgUrl:", imageUrl);
   return (
     <Container className="mt-4">
       <Card>
@@ -192,7 +291,7 @@ console.log('imgUrl:', imageUrl);
                       key={id}
                       src={imageUrl}
                       alt="Profile"
-                      className="profile-image"
+                      className="img-fluid w-50 rounded"
                     />
                   </div>
                   <h1>{movie.primaryTitle}</h1>
@@ -214,7 +313,7 @@ console.log('imgUrl:', imageUrl);
               </div>
 
               <div className="mt-3">
-              {type && (
+                {type && (
                   <Badge bg="secondary" className="me-2">
                     {type}
                   </Badge>
@@ -226,7 +325,7 @@ console.log('imgUrl:', imageUrl);
                 <Badge bg="secondary" className="me-2">
                   {movie.runTimeMinutes} min
                 </Badge>
-                
+
                 {movie.isAdult && (
                   <Badge bg="danger" className="me-2">
                     18+
@@ -235,7 +334,7 @@ console.log('imgUrl:', imageUrl);
               </div>
               <div className="mt-3">
                 <h5>OverView:</h5>
-                <p>{overView||'--Not Available--'}</p>
+                <p>{overView || "--Not Available--"}</p>
               </div>
 
               <div className="mt-4">
@@ -348,7 +447,7 @@ console.log('imgUrl:', imageUrl);
           <h1 className="text-3xl font-bold mb-6 text-center">
             {movie.primaryTitle} Word Cloud
           </h1>
-          <WordCloud words={words} width={600} height={400} />
+          <WordCloud words={cloudWords} width={600} height={400} />
         </div>
       </div>
     </Container>

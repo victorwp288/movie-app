@@ -18,7 +18,7 @@ const getTMDBData = async (imdbId) => {
 }
 
 export const getImage = async (imdbId) => {
-  const result={imageUrl:"../img/No_Image_Available.jpg",type:"unknown",overView:null};
+  const result={imageUrl:"/assets/missing.jpg",type:"unknown",overView:null};
   console.log("getImage called with imdbId:", imdbId); // Log the input
   try {
     const findData = await getTMDBData(imdbId);

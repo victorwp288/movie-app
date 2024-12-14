@@ -3,7 +3,8 @@ import MovieCard from "../components/MovieCard";
 import { getPopularMovies } from "../services/MovieService";
 import { Container, Row, Col, Button, Form } from "react-bootstrap";
 import 'bootstrap/dist/css/bootstrap.min.css';
-
+import '../App.css';
+import Footer from "../components/Footer";
 function Home() {
   const [movies, setMovies] = useState([]);
   const [page, setPage] = useState(0);
@@ -90,13 +91,15 @@ function Home() {
       {/* Popular Movies Section */}
       <Container className="py-5">
         <h2 className="text-white mb-4">Popular Movies</h2>
-        <Row className="g-4">
-          {movies.map((movie) => (
-            <Col key={movie.tconst} xs={12} sm={6} md={4} lg={3}>
-              <MovieCard movie={movie} />
-            </Col>
-          ))}
-        </Row>
+        <div className="container">
+          <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 g-4">
+            {movies.map(movie => (
+              <div className="col" key={movie.tconst || movie.id}>
+                <MovieCard movie={movie} />
+              </div>
+            ))}
+          </div>
+        </div>
         
         <div className="d-flex justify-content-between align-items-center mt-4">
           <Button
@@ -133,16 +136,8 @@ function Home() {
       </Container>
 
       {/* Footer */}
-      <footer className="bg-black text-white-50 py-4 mt-5">
-        <div className="container">
-          <div className="row">
-            <div className="col-12 text-center">
-              <p className="mb-0">© 2024 IMDb Clone. All rights reserved.</p>
-            </div>
-          </div>
-        </div>
-      </footer>
-    </div>
+      <Footer />
+    </div>	
   );
 }
 

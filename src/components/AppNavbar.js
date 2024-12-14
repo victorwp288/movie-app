@@ -29,83 +29,72 @@ function AppNavbar() {
   };
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-black">
+    <Navbar expand="lg" className="navbar-dark bg-black">
       <Container>
-
         <Link className="navbar-brand" to="/" style={{ color: '#F5C518', fontWeight: 'bold' }}>
           IMDb
         </Link>
-        <button 
-          className="navbar-toggler" 
-          type="button" 
-          data-bs-toggle="collapse" 
-          data-bs-target="#navbarNav"
-        >
-          <span className="navbar-toggler-icon"></span>
-        </button>
-        <div className="collapse navbar-collapse" id="navbarNav">
-          <Navbar.Brand as={Link} to="/">Movie App</Navbar.Brand>
-          <Navbar.Toggle aria-controls="basic-navbar-nav" />
-          <Navbar.Collapse id="basic-navbar-nav">
-            <Nav className="me-auto">
-              <Nav.Link as={Link} to="/">Home</Nav.Link>
-            </Nav>
-            <row>
-              <InputGroup className="mb-3">
-                <Form onSubmit={handleSearch} style={{ display: 'flex', alignItems: 'center' }}> {/* Add flexbox styles */}
-                  <DropdownButton title={searchType} id="input-group-dropdown-1" style={{ marginRight: '10px' }}> {/* Added margin for spacing */}
-                    <Dropdown.Item onClick={() => setSearchType("All")}>All</Dropdown.Item>
-                    <Dropdown.Item onClick={() => setSearchType("Titles")}>Titles</Dropdown.Item>
-                    <Dropdown.Item onClick={() => setSearchType("Persons")}>Persons</Dropdown.Item>
-                    <Dropdown.Item onClick={() => setSearchType("Database")}>Database</Dropdown.Item>
-                  </DropdownButton>
-                  <Form.Control
-                    type="search"
-                    placeholder="Search movies..."
-                    className="me-2"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    aria-label="Search movies"
-                    style={{ flexGrow: 1 }} // This allows the search bar to take up available space
-                  />
-                  <Button variant="outline-light" type="submit" style={{ marginLeft: '10px' }}>Search</Button> {/* Added margin for spacing */}
-                </Form>
-              </InputGroup>
-            </row>
-            <ul className="navbar-nav ms-auto">
-              {authTokens ? (
-                <NavDropdown 
-                  title={<i className="fas fa-user"></i>} 
-                  id="basic-nav-dropdown" 
-                  align="end"
-                  className="nav-link"
-                >
-                  <NavDropdown.Item as={Link} to="/profile">
-                    Profile
-                  </NavDropdown.Item>
-                  <NavDropdown.Divider />
-                  <NavDropdown.Item onClick={handleLogout}>
-                    Logout
-                  </NavDropdown.Item>
-                </NavDropdown>
-              ) : (
-                <>
-                  <li className="nav-item">
-                    <Link className="nav-link" to="/login">Sign In</Link>
-                  </li>
-                  <li className="nav-item">
-                    <Link className="nav-link" to="/signup">Sign Up</Link>
-                  </li>
-                </>
-              )}
-              <li className="nav-item">
-                <Link className="nav-link" to="/watchlist">Watchlist</Link>
-              </li>
-            </ul>
-          </Navbar.Collapse>
-        </div>
+        <Navbar.Toggle aria-controls="basic-navbar-nav" />
+        <Navbar.Collapse id="basic-navbar-nav">
+          <InputGroup className="mx-auto" style={{ maxWidth: '600px' }}>
+            <Form onSubmit={handleSearch} className="d-flex w-100">
+              <DropdownButton 
+                title={searchType} 
+                id="input-group-dropdown-1" 
+                variant="secondary"
+                style={{
+                  backgroundColor: '#2a2a2a',
+                  borderRadius: '4px 0 0 4px'
+                }}
+              >
+                <Dropdown.Item onClick={() => setSearchType("All")}>All</Dropdown.Item>
+                <Dropdown.Item onClick={() => setSearchType("Titles")}>Titles</Dropdown.Item>
+                <Dropdown.Item onClick={() => setSearchType("Persons")}>Persons</Dropdown.Item>
+                <Dropdown.Item onClick={() => setSearchType("Database")}>Database</Dropdown.Item>
+              </DropdownButton>
+              <Form.Control
+                type="search"
+                placeholder="Search movies..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                aria-label="Search movies"
+                style={{
+                  backgroundColor: '#2a2a2a',
+                  border: '1px solid #404040',
+                  color: 'white',
+                  width: '100%'
+                }}
+              />
+              <Button 
+                variant="outline-warning" 
+                type="submit"
+                style={{
+                  borderColor: '#F5C518',
+                  color: '#F5C518',
+                  marginLeft: '-1px',
+                  borderRadius: '0 4px 4px 0'
+                }}
+              >
+                Search
+              </Button>
+            </Form>
+          </InputGroup>
+          <Nav className="ms-auto">
+            {authTokens ? (
+              <>
+                <Nav.Link as={Link} to="/profile">Profile</Nav.Link>
+                <Nav.Link onClick={handleLogout}>Logout</Nav.Link>
+              </>
+            ) : (
+              <>
+                <Nav.Link as={Link} to="/login">Sign In</Nav.Link>
+                <Nav.Link as={Link} to="/signup">Sign Up</Nav.Link>
+              </>
+            )}
+          </Nav>
+        </Navbar.Collapse>
       </Container>
-    </nav>
+    </Navbar>
   );
 }
 
