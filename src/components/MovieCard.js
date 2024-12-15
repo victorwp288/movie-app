@@ -140,7 +140,7 @@ function MovieCard({ movie, isBookmarked = false, onBookmarkChange }) {
   }
 
   return (
-    <Link to={`/${linkTo}/${id}`} className="text-decoration-none h-100">
+    <Link to={`/${linkTo}/${id}`}state={{imageUrl,title,type,overView}} className="text-decoration-none h-100">
       <Card className="h-100 bg-dark text-white border-0 movie-card">
         <div className="position-relative" style={{ height: "300px" }}>
           <Card.Img
@@ -178,7 +178,7 @@ function MovieCard({ movie, isBookmarked = false, onBookmarkChange }) {
           </div>
           {overView && (
             <Card.Text
-              className="text-muted small movie-overview overflow-hidden"
+              className="text-white small movie-overview overflow-hidden"
               style={{
                 display: "-webkit-box",
                 WebkitLineClamp: "3",
