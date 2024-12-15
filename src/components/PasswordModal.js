@@ -58,8 +58,14 @@ const PasswordModal = ({ isOpen, onClose, onSubmit, userDet }) => {
             setNewPassword('');
             setConfirmPassword('');
 
-        } catch (err) {
-            setError(err.message || 'Password update failed. Please try again.'); // Set more meaningful error message
+        }
+        catch (err) {
+            if(err.name === 'ZodError') {
+              setError(err.errors[0].message);
+            } else {
+              setError(err.message || 'Password update failed. Please try again.');// Set more meaningful error message
+            }
+          
         }
     };
     const handleClose = () => {

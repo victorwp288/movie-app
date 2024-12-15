@@ -57,7 +57,11 @@ function SignUp() {
       // Registration successful
       navigate('/login');
     } catch (err) {
-      setError(err.message);
+      if(err.name === 'ZodError') {
+        setError(err.errors[0].message);
+      } else {
+        setError(err.message || 'Sign Up failed');
+      }
     } finally {
       setLoading(false);
     }
