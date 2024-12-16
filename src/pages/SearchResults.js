@@ -36,7 +36,7 @@ function SearchResults() {
 
   useEffect(() => {
     // Dynamically import Bootstrap's JavaScript
-    import('bootstrap/dist/js/bootstrap.bundle.min.js');
+    import("bootstrap/dist/js/bootstrap.bundle.min.js");
   }, []);
 
   useEffect(() => {
@@ -52,16 +52,8 @@ function SearchResults() {
         const searchTermTrimmed = searchTerm.trim();
 
         switch (searchType) {
-          case "all":
-            results = await searchAllMovies(searchTermTrimmed);
-            break;
           case "titles":
             results = await searchMovieTitles(searchTermTrimmed);
-            break;
-          case "database":
-            results = userId
-              ? await searchDatabaseForUser(searchTermTrimmed, userId)
-              : await searchDatabaseTitles(searchTermTrimmed);
             break;
           case "persons":
             results = await searchPersons(searchTermTrimmed);
@@ -76,8 +68,8 @@ function SearchResults() {
           setMovies([]);
         }
       } catch (err) {
-        console.error('Search error:', err);
-        setError(err.message || 'An error occurred while searching');
+        console.error("Search error:", err);
+        setError(err.message || "An error occurred while searching");
         setMovies([]);
       } finally {
         const endTime = performance.now();
@@ -111,7 +103,10 @@ function SearchResults() {
         </Row>
 
         {error && (
-          <div className="alert alert-danger bg-danger bg-opacity-25 text-white border-danger" role="alert">
+          <div
+            className="alert alert-danger bg-danger bg-opacity-25 text-white border-danger"
+            role="alert"
+          >
             {error}
           </div>
         )}
