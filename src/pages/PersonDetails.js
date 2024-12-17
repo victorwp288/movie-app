@@ -4,11 +4,12 @@ import { getPersonDetails } from "../services/PersonService";
 import {getMovieDetails} from "../services/MovieService";
 import { Container, Button, Card, Row, Col, Badge, Spinner, Form } from "react-bootstrap";
 import MovieCard from "../components/MovieCard";
+import { getImage } from "../services/TMDBService";
 
 function PersonDetails() {
     const location = useLocation() ;
     //console.log('location.state in MovieListPage:', location.state);
-    const imageUrl = location.state ? location.state.imageUrl : '';
+    const [imageUrl,setImageUrl] =useState(null);
     const title = location.state ? location.state.title : '';
     const { id } = useParams();
     const [loading, setLoading] = useState(true);
@@ -19,26 +20,36 @@ function PersonDetails() {
     const [professions, setProfessions] = useState([]);
     const [movies, setMovies] = useState([]);
     
+    const fetchImage = async () => {
+      if (imageUrl) {
+        return;
+      }else{
+        const imageDataNType = await getImage(id.trim());
+        setImageUrl(imageDataNType.imageUrl);
+        console.log("imageUrl:", imageUrl);
+      }
+    };
     useEffect(() => {
-        const fetchPersonDetails = async () => {
-            try {
-                setLoading(true);
-                setError(null);
-                const nconst = id.trim();
-                console.log('Fetching person details for Nconst:', nconst);
-                const data = await getPersonDetails(nconst);
-                console.log('Person details:', data);
-                setPerson(data.data); // Corrected spelling here
-            } catch (err) {
-                console.error('Error fetching Person details:', err);
-                setError(err.message || 'Failed to load Person details');
-            } finally {
-                setLoading(false);
-            }
-        };
-        if (id) {
-            fetchPersonDetails();
+    const fetchPersonDetails = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const nconst = id.trim();
+            console.log('Fetching person details for Nconst:', nconst);
+            const data = await getPersonDetails(nconst);
+            console.log('Person details:', data);
+            setPerson(data.data); // Corrected spelling here
+        } catch (err) {
+            console.error('Error fetching Person details:', err);
+            setError(err.message || 'Failed to load Person details');
+        } finally {
+            setLoading(false);
         }
+    };
+    if (id) {
+        fetchPersonDetails();
+        fetchImage();
+    }
     }, [id]);  
 
     useEffect(() => {
@@ -110,35 +121,38 @@ function PersonDetails() {
                         <Col md={8}>
                             <div className="d-flex justify-content-between align-items-start">
                                 <div>
-                                    <div className="images-for">
+                                  <div className="position-relative" >
                                         <img
                                             key={id}
                                             src={imageUrl}
                                             alt="Profile"
-                                            className="profile-image"
+                                            className="img-fluid rounded"
+                                            style={{ height: "300px", width: "200px" }}
                                         />
                                     </div>
                                     <h2>{title}</h2>
                                 </div>
-                                {yearOfBirth && <div>
-                                    <h5>Birth Year:{yearOfBirth}</h5>
-                                </div>}
-                                {yearOfDeath && <div>
-                                    <h5>Death Day:{yearOfDeath}</h5>
-                                </div>}
-                                {professions && (
-                                  <div className="mt-3">
-                                    {professions.length > 0 && (
-                                      <>Professions: {/* React Fragment */}
-                                        {professions.map((p) => (
-                                          <Badge bg="secondary" className="me-2" key={p.id}>
-                                            {p.profession.charAt(0).toUpperCase() + p.profession.slice(1)}
-                                          </Badge>
-                                        ))}
-                                      </>
-                                    )}
-                                  </div>
-                                )}
+                                <div className="d-flex flex-column align-items-left">
+                                  {yearOfBirth && <div>
+                                      <h5>Birth Year:{yearOfBirth}</h5>
+                                  </div>}
+                                  {yearOfDeath && <div>
+                                      <h5>Death Day:{yearOfDeath}</h5>
+                                  </div>}
+                                  {professions && (
+                                    <div className="mt-3">
+                                      {professions.length > 0 && (
+                                        <>Professions: {/* React Fragment */}
+                                          {professions.map((p) => (
+                                            <Badge bg="secondary" className="me-2" key={p.id}>
+                                              {p.profession.charAt(0).toUpperCase() + p.profession.slice(1)}
+                                            </Badge>
+                                          ))}
+                                        </>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                         </Col>
                     </Row>

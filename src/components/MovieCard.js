@@ -86,18 +86,17 @@ function MovieCard({ movie, isBookmarked = false, onBookmarkChange }) {
     cursor: "pointer",
   };
 
-  const [linkTo, setLinkTo] = useState("movie");
+  
 
   const id = (movie?.tConst || movie?.tconst || movie?.id || "").trim();
+  const [linkTo, setLinkTo] = useState(id && id.length >= 2 && id.substring(0, 2) === "nm"? "person": "movie");
   console.log("ID:", id);
   const noImage = "/assets/missing.jpg";
   const [imageUrl, setImageUrl] = useState(noImage);
   const [overView, setOverView] = useState(movie?.overView || "");
   const [type, setType] = useState(movie?.type || "Unknown");
-
-  if (type === "Person") {
-    setType("person");
-  }
+  
+ 
 
   useEffect(() => {
     const fetchAndSetImage = async () => {
@@ -111,6 +110,7 @@ function MovieCard({ movie, isBookmarked = false, onBookmarkChange }) {
         setOverView(imageData.overView || "");
         if (type === "Unknown" && imageData.type) {
           setType(imageData.type);
+          
         }
       } catch (error) {
         console.error("Error fetching image:", error);
@@ -123,12 +123,6 @@ function MovieCard({ movie, isBookmarked = false, onBookmarkChange }) {
 
   console.log(imageUrl);
   console.log(type);
-
-  useEffect(() => {
-    if (type === "person") {
-      setLinkTo("person");
-    }
-  }, [type]); // Dependencies added here
 
   const title =
     movie?.primaryTitle || movie?.originalTitle || movie?.name || "Untitled";

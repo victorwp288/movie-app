@@ -37,7 +37,7 @@ function MovieDetails() {
   const [ratingLoading, setRatingLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [imageUrl, setImageUrl] = useState(null);
+  const [imageUrl, setImageUrl] = useState("/assets/missing.jpg");
   const [type, setType] = useState(null);
   const [overView, setOverView] = useState(null);
   const [reviewWords, setReviewWords] = useState([]);
@@ -276,6 +276,7 @@ function MovieDetails() {
       </Container>
     );
   }
+  //if(!imageUrl)setImageUrl(imageUrl);
   console.log("imgUrl:", imageUrl);
   return (
     <Container className="mt-4">
@@ -285,12 +286,13 @@ function MovieDetails() {
             <Col md={8}>
               <div className="d-flex justify-content-between align-items-start">
                 <div>
-                  <div className="images-for">
+                  <div className="for-image" >
                     <img
                       key={id}
                       src={imageUrl}
                       alt="Profile"
-                      className="img-fluid w-50 rounded"
+                      className="img-fluid rounded"
+                      style={{ height: "300px", width: "200px" }}
                     />
                   </div>
                   <h1>{movie.primaryTitle}</h1>
