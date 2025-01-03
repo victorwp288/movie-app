@@ -1,10 +1,7 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useCallback } from "react";
 import {
-  searchAllMovies,
   searchMovieTitles,
-  searchDatabaseTitles,
   searchPersons,
-  searchDatabaseForUser,
 } from "../services/MovieService";
 import MovieCard from "../components/MovieCard";
 import { Container, Row, Col, Spinner } from "react-bootstrap";
@@ -29,7 +26,6 @@ function SearchResults() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchDuration, setSearchDuration] = useState(null);
-  const [sortBy, setSortBy] = useState("relevance");
 
   const { authTokens } = useContext(AuthContext);
   const userId = authTokens?.userId;
@@ -39,50 +35,50 @@ function SearchResults() {
     import("bootstrap/dist/js/bootstrap.bundle.min.js");
   }, []);
 
-  useEffect(() => {
-    const performSearch = async () => {
-      if (!searchTerm || !searchType) return;
+  const performSearch = useCallback(async () => {
+    if (!searchTerm || !searchType) return;
 
-      setLoading(true);
-      setError(null);
-      const startTime = performance.now();
+    setLoading(true);
+    setError(null);
+    const startTime = performance.now();
 
-      try {
-        let results;
-        const searchTermTrimmed = searchTerm.trim();
+    try {
+      let results;
+      const searchTermTrimmed = searchTerm.trim();
 
-        switch (searchType) {
-          case "titles":
-            results = await searchMovieTitles(searchTermTrimmed);
-            break;
-          case "persons":
-            results = await searchPersons(searchTermTrimmed);
-            break;
-          default:
-            results = await searchMovieTitles(searchTermTrimmed);
-        }
-
-        if (Array.isArray(results)) {
-          setMovies(results);
-        } else {
-          setMovies([]);
-        }
-      } catch (err) {
-        console.error("Search error:", err);
-        setError(err.message || "An error occurred while searching");
-        setMovies([]);
-      } finally {
-        const endTime = performance.now();
-        const duration = (endTime - startTime).toFixed(2);
-        setSearchDuration(duration);
-        setLoading(false);
+      switch (searchType) {
+        case "titles":
+          results = await searchMovieTitles(searchTermTrimmed);
+          break;
+        case "persons":
+          results = await searchPersons(searchTermTrimmed);
+          break;
+        default:
+          results = await searchMovieTitles(searchTermTrimmed);
       }
-    };
 
+      if (Array.isArray(results)) {
+        setMovies(results);
+      } else {
+        setMovies([]);
+      }
+    } catch (err) {
+      console.error("Search error:", err);
+      setError(err.message || "An error occurred while searching");
+      setMovies([]);
+    } finally {
+      const endTime = performance.now();
+      const duration = (endTime - startTime).toFixed(2);
+      setSearchDuration(duration);
+      setLoading(false);
+    }
+  }, [searchTerm, searchType]);
+
+  useEffect(() => {
     if (searchTerm.trim()) {
       performSearch();
     }
-  }, [searchTerm, searchType, userId]);
+  }, [searchTerm, searchType, userId, performSearch]);
 
   return (
     <div className="min-vh-100 bg-dark">

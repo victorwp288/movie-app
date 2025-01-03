@@ -6,11 +6,7 @@ import {
   rateMovie,
   getUserBookmarks,
   removeBookmark,
-  getUserRating,
-  getMovieReviewWords,
-  getMovieGenreWords,
-  getMovieCastWords,
-  getRelatedMovieWords,
+  getUserRating
 } from "../services/MovieService";
 import {
   Container,
@@ -40,10 +36,6 @@ function MovieDetails() {
   const [imageUrl, setImageUrl] = useState("/assets/missing.jpg");
   const [type, setType] = useState(null);
   const [overView, setOverView] = useState(null);
-  const [reviewWords, setReviewWords] = useState([]);
-  const [genreWords, setGenreWords] = useState([]);
-  const [castWords, setCastWords] = useState([]);
-  const [relatedWords, setRelatedWords] = useState([]);
   const [cloudWords, setCloudWords] = useState([]);
 
   const { authTokens } = useContext(AuthContext);
@@ -80,7 +72,7 @@ function MovieDetails() {
       fetchMovieDetails();
       fetchImage();
     }
-  }, [id]);
+  }, [id, imageUrl, type]);
 
   useEffect(() => {
     const checkBookmarkStatus = async () => {
@@ -116,87 +108,39 @@ function MovieDetails() {
   }, [userId, movie]);
 
   useEffect(() => {
-    const fetchReviewWords = async () => {
-      if (movie?.tConst) {
-        const words = await getMovieReviewWords(movie.tConst);
-        setReviewWords(words);
-      }
-    };
-
-    fetchReviewWords();
-  }, [movie]);
-
-  useEffect(() => {
-    const fetchWordCloudData = async () => {
-      if (movie?.tConst) {
-        // Fetch all word cloud data in parallel
-        const [genres, cast, related] = await Promise.all([
-          getMovieGenreWords(movie.tConst),
-          getMovieCastWords(movie.tConst),
-          getRelatedMovieWords(movie.tConst),
-        ]);
-
-        setGenreWords(genres);
-        setCastWords(cast);
-        setRelatedWords(related);
-      }
-    };
-
-    fetchWordCloudData();
-  }, [movie]);
-
-  useEffect(() => {
     if (movie) {
-      // Combine all text data
-      const allWords = [
-        // Add genres (higher weight since they're important)
-        ...(movie.genres?.map((genre) => ({ text: genre, size: 55 })) || []),
+      // Simplified word collection with consistent format
+      const words = [
+        // Genres (high weight)
+        ...(movie.genres?.map(genre => ({
+          text: genre,
+          size: 55
+        })) || []),
 
-        // Add words from overview/description (medium weight)
-        ...(overView
-          ?.split(/\s+/)
-          .filter((word) => word.length > 3) // Filter out small words
-          .map((word) => ({ text: word, size: 40 })) || []),
+        // Overview words (medium weight)
+        ...(overView?.split(/\s+/)
+          .filter(word => word.length > 3)
+          .map(word => ({
+            text: word,
+            size: 40
+          })) || []),
 
-        // Add title words (high weight for visibility)
-        ...movie.primaryTitle.split(/\s+/).map((word) => ({
+        // Title words (highest weight)
+        ...movie.primaryTitle.split(/\s+/).map(word => ({
           text: word,
-          size: 60,
+          size: 60
         })),
 
-        // Add review if it exists (medium weight)
-        ...(review
-          ?.split(/\s+/)
-          .filter((word) => word.length > 3)
-          .map((word) => ({ text: word, size: 45 })) || []),
+        // Review words (medium weight)
+        ...(review?.split(/\s+/)
+          .filter(word => word.length > 3)
+          .map(word => ({
+            text: word,
+            size: 45
+          })) || [])
       ];
 
-      // Combine duplicate words and average their sizes
-      const wordMap = new Map();
-      allWords.forEach(({ text, size }) => {
-        const word = text.toLowerCase().replace(/[^a-z0-9]/g, "");
-        if (word) {
-          if (wordMap.has(word)) {
-            const existing = wordMap.get(word);
-            wordMap.set(word, {
-              count: existing.count + 1,
-              totalSize: existing.totalSize + size,
-            });
-          } else {
-            wordMap.set(word, { count: 1, totalSize: size });
-          }
-        }
-      });
-
-      // Convert back to array format with averaged sizes
-      const combinedWords = Array.from(wordMap.entries()).map(
-        ([word, data]) => ({
-          text: word,
-          size: data.totalSize / data.count,
-        })
-      );
-
-      setCloudWords(combinedWords);
+      setCloudWords(words);
     }
   }, [movie, overView, review]);
 
@@ -286,7 +230,7 @@ function MovieDetails() {
             <Col md={8}>
               <div className="d-flex justify-content-between align-items-start">
                 <div>
-                  <div className="for-image" >
+                  <div className="for-image">
                     <img
                       key={id}
                       src={imageUrl}

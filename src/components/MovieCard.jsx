@@ -31,12 +31,9 @@ function MovieCard({ movie, isBookmarked = false, onBookmarkChange }) {
   useEffect(() => {
     const checkBookmarkStatus = async () => {
       if (userId && movieId) {
-        console.log("Checking bookmark status for movie:", movie.tconst);
         try {
           const bookmarks = await getUserBookmarks(userId);
-          console.log("Bookmarks:", bookmarks);
           const isBookmarked = bookmarks.some((b) => b.tConst === movieId);
-          console.log("Bookmarked:", isBookmarked);
           setBookmarked(isBookmarked);
         } catch (error) {
           console.error("Error checking bookmark status:", error);
@@ -45,7 +42,7 @@ function MovieCard({ movie, isBookmarked = false, onBookmarkChange }) {
     };
 
     checkBookmarkStatus();
-  }, [userId, movie]);
+  }, [userId, movieId]);
 
   const handleBookmark = async (e) => {
     e.preventDefault();
@@ -89,8 +86,7 @@ function MovieCard({ movie, isBookmarked = false, onBookmarkChange }) {
   
 
   const id = (movie?.tConst || movie?.tconst || movie?.id || "").trim();
-  const [linkTo, setLinkTo] = useState(id && id.length >= 2 && id.substring(0, 2) === "nm"? "person": "movie");
-  console.log("ID:", id);
+  const linkTo = id && id.length >= 2 && id.substring(0, 2) === "nm" ? "person" : "movie";
   const noImage = "/assets/missing.jpg";
   const [imageUrl, setImageUrl] = useState(noImage);
   const [overView, setOverView] = useState(movie?.overView || "");
@@ -110,7 +106,6 @@ function MovieCard({ movie, isBookmarked = false, onBookmarkChange }) {
         setOverView(imageData.overView || "");
         if (type === "Unknown" && imageData.type) {
           setType(imageData.type);
-          
         }
       } catch (error) {
         console.error("Error fetching image:", error);
@@ -119,7 +114,7 @@ function MovieCard({ movie, isBookmarked = false, onBookmarkChange }) {
     };
 
     fetchAndSetImage();
-  }, [id]);
+  }, [id, type]);
 
   console.log(imageUrl);
   console.log(type);

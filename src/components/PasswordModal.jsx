@@ -79,6 +79,11 @@ const PasswordModal = ({ isOpen, onClose, onSubmit, userDet }) => {
                 <Modal.Title>Change Password</Modal.Title>
             </Modal.Header>
             <Modal.Body>
+                {showSuccessAlert && (
+                    <div className="alert alert-success">
+                        Password changed successfully!
+                    </div>
+                )}
                 <Form>
                     <Form.Group controlId="formNewPassword">
                         <Form.Label>New Password</Form.Label>

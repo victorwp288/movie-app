@@ -8,7 +8,7 @@ export const passwordSchema = z
       const hasUpperCase = /[A-Z]/.test(password);
       const hasLowerCase = /[a-z]/.test(password);
       const hasNumber = /[0-9]/.test(password);
-      const hasSymbol = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/.test(password); // Add more symbols as needed
+      const hasSymbol = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+/.test(password);
 
       return hasUpperCase && hasLowerCase && hasNumber && hasSymbol;
     },

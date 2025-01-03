@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams,useLocation } from "react-router-dom";
 import { getPersonDetails } from "../services/PersonService";
 import {getMovieDetails} from "../services/MovieService";
-import { Container, Button, Card, Row, Col, Badge, Spinner, Form } from "react-bootstrap";
+import { Container, Card, Row, Col, Badge, Spinner } from "react-bootstrap";
 import MovieCard from "../components/MovieCard";
 import { getImage } from "../services/TMDBService";
 
@@ -20,15 +20,15 @@ function PersonDetails() {
     const [professions, setProfessions] = useState([]);
     const [movies, setMovies] = useState([]);
     
-    const fetchImage = async () => {
+    const fetchImage = useCallback(async () => {
       if (imageUrl) {
         return;
-      }else{
-        const imageDataNType = await getImage(id.trim());
-        setImageUrl(imageDataNType.imageUrl);
-        console.log("imageUrl:", imageUrl);
       }
-    };
+      const imageDataNType = await getImage(id.trim());
+      setImageUrl(imageDataNType.imageUrl);
+      console.log("imageUrl:", imageUrl);
+    }, [id, imageUrl]);
+
     useEffect(() => {
     const fetchPersonDetails = async () => {
         try {
@@ -50,7 +50,7 @@ function PersonDetails() {
         fetchPersonDetails();
         fetchImage();
     }
-    }, [id]);  
+    }, [id, fetchImage]);  
 
     useEffect(() => {
         if (person) {

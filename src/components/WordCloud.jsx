@@ -10,7 +10,7 @@ export function WordCloud({ words, width, height }) {
   }
 
   return (
-    <div className="relative">
+    <div style={{ position: 'relative', width, height }}>
       <svg width={width} height={height}>
         <g transform={`translate(${width / 2},${height / 2})`}>
           {cloudWords.map((word, i) => (
@@ -34,11 +34,6 @@ export function WordCloud({ words, width, height }) {
           ))}
         </g>
       </svg>
-      {hoveredWord && (
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-md shadow-lg">
-          {hoveredWord}
-        </div>
-      )}
     </div>
   );
 }

@@ -30,19 +30,6 @@ function Profile() {
   const [showAlertPasCh, setShowAlertPasCh] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  const fetchBookmarks = async () => {
-    if (!authTokens?.userId) return;
-
-    try {
-      console.log("Fetching bookmarks for user:", authTokens.userId);
-      const bookmarkedMovies = await getUserBookmarks(authTokens.userId);
-      console.log("Received bookmarks:", bookmarkedMovies);
-      setBookmarks(bookmarkedMovies);
-    } catch (error) {
-      console.error("Error fetching bookmarks:", error);
-    }
-  };
-
   useEffect(() => {
     // Dynamically import Bootstrap's JavaScript
     import("bootstrap/dist/js/bootstrap.bundle.min.js");
@@ -66,6 +53,16 @@ function Profile() {
       }
     };
 
+    const fetchBookmarks = async () => {
+      if (!authTokens?.userId) return;
+      try {
+        const bookmarkedMovies = await getUserBookmarks(authTokens.userId);
+        setBookmarks(bookmarkedMovies);
+      } catch (error) {
+        console.error("Error fetching bookmarks:", error);
+      }
+    };
+
     const fetchRatings = async () => {
       if (!authTokens?.userId) return;
 
@@ -83,6 +80,28 @@ function Profile() {
     fetchUserDetails();
     fetchBookmarks();
     fetchRatings();
+  }, [authTokens]);
+
+  useEffect(() => {
+    const handleFocus = () => {
+      const fetchBookmarks = async () => {
+        if (!authTokens?.userId) return;
+        try {
+          const bookmarkedMovies = await getUserBookmarks(authTokens.userId);
+          setBookmarks(bookmarkedMovies);
+        } catch (error) {
+          console.error("Error fetching bookmarks:", error);
+        }
+      };
+      fetchBookmarks();
+    };
+
+    window.addEventListener("focus", handleFocus);
+    handleFocus();
+
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+    };
   }, [authTokens]);
 
   const handleLogout = () => {
@@ -127,23 +146,6 @@ function Profile() {
   const handleCancelDelete = () => {
     setShowDeleteModal(false);
   };
-
-  const handleBookmarkRemove = async (movieId) => {
-    setBookmarks((prev) => prev.filter((movie) => movie.tconst !== movieId));
-  };
-
-  useEffect(() => {
-    const handleFocus = () => {
-      fetchBookmarks();
-    };
-
-    window.addEventListener("focus", handleFocus);
-    fetchBookmarks();
-
-    return () => {
-      window.removeEventListener("focus", handleFocus);
-    };
-  }, [authTokens]);
 
   return (
     <div className="min-vh-100 bg-dark">
